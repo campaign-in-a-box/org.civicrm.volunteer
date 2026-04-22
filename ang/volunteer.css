@@ -83,9 +83,9 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Room for the docked cart so the last rows of the list are not obscured. */
+  /* Space below results when the cart can dock to the viewport (mobile / narrow). */
   .crm-container.crm-vol-opps-page > .crm-vol-opp-results:not(.messages) {
-    padding-bottom: 9rem;
+    padding-bottom: 1rem;
   }
 
   .crm-vol-opp-cart-message-wrapper {
