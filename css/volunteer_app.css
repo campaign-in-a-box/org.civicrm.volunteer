@@ -199,6 +199,65 @@
   min-width: 12em;
 }
 
+/* Define dialog: bulk link lives inside .ui-dialog-buttonset (prepended before
+   Done) so the native button bar layout stays intact. */
+#crm-volunteer-dialog ~ .ui-dialog-buttonpane {
+  text-align: right;
+}
+#crm-volunteer-dialog ~ .ui-dialog-buttonpane .ui-dialog-buttonset {
+  float: none;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65em;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.2em 0.35em;
+}
+#crm-volunteer-dialog ~ .ui-dialog-buttonpane .crm-vol-define-bulk-footer-wrap {
+  float: none;
+  margin: 0;
+  padding: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+#crm-volunteer-dialog ~ .ui-dialog-buttonpane .crm-vol-define-bulk-footer-wrap a.button {
+  margin: 0;
+  max-width: 100%;
+}
+#crm-volunteer-dialog ~ .ui-dialog-buttonpane .ui-dialog-buttonset > .ui-button {
+  flex: 0 0 auto;
+}
+
 .crm-vol-renderutil-select {
   white-space: nowrap;
+}
+
+/* Tight gap between field row and hint row */
+.crm-vol-define-bulk-form .crm-vol-define-bulk-hint-row td {
+  padding-top: 0;
+  padding-bottom: 0.35em;
+  vertical-align: top;
+}
+.crm-vol-define-bulk-form .crm-vol-define-bulk-hint-row td.label {
+  padding-top: 0;
+  padding-bottom: 0;
+  border: none;
+  line-height: 0;
+  height: 0;
+  overflow: hidden;
+}
+.crm-vol-define-bulk-form .crm-vol-define-bulk-hint {
+  display: block;
+  margin-top: -0.35em;
+  font-size: 0.85em;
+  font-style: italic;
+  color: #555;
+  line-height: 1.35;
+}
+.crm-vol-define-bulk-form tr:has(+ tr.crm-vol-define-bulk-hint-row) td {
+  padding-bottom: 0.2em;
 }
