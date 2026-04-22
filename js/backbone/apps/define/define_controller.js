@@ -29,16 +29,18 @@ CRM.volunteerApp.module('Define', function(Define, volunteerApp, Backbone, Mario
           Define.needRegistry.clean.push(item.id);
         });
 
+        var flexibleNeedModel = new CRM.volunteerApp.Entities.NeedModel(_.findWhere(arrData, {is_flexible: '1'}));
         Define.collectionView = new Define.needsCompositeView({
-          'collection': collectionData
+          collection: collectionData,
+          flexibleModel: flexibleNeedModel
         });
         layout.scheduledNeeds.show(Define.collectionView);
-
-        var flexibleNeedModel = new CRM.volunteerApp.Entities.NeedModel(_.findWhere(arrData, {is_flexible: '1'}));
-        var flexibleItemView = new Define.flexibleNeedItemView(flexibleNeedModel);
-        flexibleItemView.model = flexibleNeedModel;
-        layout.flexibleNeeds.show(flexibleItemView);
+        Define.attachBulkButtonToDialog();
       });
+  });
+
+  Define.on('stop', function() {
+    Define.detachBulkButtonFromDialog();
   });
 
 });

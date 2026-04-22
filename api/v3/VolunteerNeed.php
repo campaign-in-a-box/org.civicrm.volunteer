@@ -189,3 +189,157 @@ function civicrm_api3_volunteer_need_delete($params) {
   return _civicrm_api3_basic_delete('CRM_Volunteer_BAO_Need', $params);
 }
 
+/**
+ * Metadata for the createbulk action.
+ *
+ * @param array $params
+ */
+function _civicrm_api3_volunteer_need_createbulk_spec(&$params) {
+  $params['project_id'] = array(
+    'title' => 'Project ID',
+    'description' => 'Project in which the shifts will be created.',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.required' => 1,
+  );
+  $params['role_id'] = array(
+    'title' => 'Role',
+    'description' => 'Volunteer role ID to assign to each created shift.',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.required' => 1,
+  );
+  $params['start_date'] = array(
+    'title' => 'Start Date',
+    'description' => 'Date (YYYY-MM-DD) of the first day on which shifts are generated.',
+    'type' => CRM_Utils_Type::T_DATE,
+    'api.required' => 1,
+  );
+  $params['start_time'] = array(
+    'title' => 'Start Time',
+    'description' => 'Time of day (HH:MM or HH:MM:SS) at which the first shift of each day starts.',
+    'type' => CRM_Utils_Type::T_STRING,
+    'api.required' => 1,
+  );
+  $params['duration'] = array(
+    'title' => 'Duration (minutes)',
+    'description' => 'Length of each shift in minutes.',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.required' => 1,
+  );
+  $params['shifts_per_day'] = array(
+    'title' => 'Shifts Per Day',
+    'description' => 'Number of consecutive shifts to generate on each day.',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.default' => 1,
+  );
+  $params['day_count'] = array(
+    'title' => 'Day Count',
+    'description' => 'Number of consecutive days on which shifts should be generated.',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.default' => 1,
+  );
+  $params['gap_minutes'] = array(
+    'title' => 'Gap Between Shifts (minutes)',
+    'description' => 'Optional gap in minutes between the end of one shift and the start of the next on the same day.',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.default' => 0,
+  );
+  $params['quantity'] = array(
+    'title' => 'Volunteers Needed Per Shift',
+    'description' => 'Number of volunteers needed for each generated shift.',
+    'type' => CRM_Utils_Type::T_INT,
+    'api.default' => 1,
+  );
+  $params['is_active'] = array(
+    'title' => 'Is Active',
+    'type' => CRM_Utils_Type::T_BOOLEAN,
+    'api.default' => 1,
+  );
+  $params['visibility_id'] = array(
+    'title' => 'Visibility',
+    'type' => CRM_Utils_Type::T_INT,
+  );
+}
+
+/**
+ * Create a set of Volunteer Needs from a simple repeating pattern.
+ *
+ * Generates `shifts_per_day` shifts of `duration` minutes starting at
+ * `start_time` on each of `day_count` consecutive days, beginning on
+ * `start_date`.
+ *
+ * @param array $params
+ * @return array
+ */
+function civicrm_api3_volunteer_need_createbulk($params) {
+  $shiftsPerDay = max(1, (int) $params['shifts_per_day']);
+  $dayCount = max(1, (int) $params['day_count']);
+  $duration = (int) $params['duration'];
+  $gapMinutes = (int) CRM_Utils_Array::value('gap_minutes', $params, 0);
+
+  if ($duration < 1) {
+    throw new API_Exception('Duration must be at least 1 minute.');
+  }
+
+  // Normalize start time to HH:MM:SS.
+  $startTime = trim($params['start_time']);
+  if (preg_match('/^\d{1,2}:\d{2}$/', $startTime)) {
+    $startTime .= ':00';
+  }
+  if (!preg_match('/^\d{1,2}:\d{2}:\d{2}$/', $startTime)) {
+    throw new API_Exception('start_time must be formatted as HH:MM or HH:MM:SS.');
+  }
+
+  $startDate = trim($params['start_date']);
+  // APIv3 may deliver T_DATE values as YYYYMMDDHHMMSS; normalize to YYYY-MM-DD.
+  if (preg_match('/^(\d{4})(\d{2})(\d{2})/', $startDate, $m)) {
+    $startDate = "{$m[1]}-{$m[2]}-{$m[3]}";
+  }
+
+  try {
+    $firstShift = new DateTime($startDate . ' ' . $startTime);
+  }
+  catch (Exception $e) {
+    throw new API_Exception('Could not parse start_date/start_time: ' . $e->getMessage());
+  }
+
+  $baseParams = array(
+    'project_id' => $params['project_id'],
+    'role_id' => $params['role_id'],
+    'duration' => $duration,
+    'quantity' => (int) CRM_Utils_Array::value('quantity', $params, 1),
+    'is_active' => !empty($params['is_active']) ? 1 : 0,
+    'is_flexible' => 0,
+  );
+  if (isset($params['visibility_id'])) {
+    $baseParams['visibility_id'] = $params['visibility_id'];
+  }
+  if (!empty($params['check_permissions'])) {
+    $baseParams['check_permissions'] = 1;
+  }
+
+  $created = array();
+  $stepMinutes = $duration + max(0, $gapMinutes);
+
+  for ($day = 0; $day < $dayCount; $day++) {
+    for ($slot = 0; $slot < $shiftsPerDay; $slot++) {
+      $shiftStart = clone $firstShift;
+      if ($day > 0) {
+        $shiftStart->add(new DateInterval('P' . $day . 'D'));
+      }
+      if ($slot > 0) {
+        $shiftStart->add(new DateInterval('PT' . ($slot * $stepMinutes) . 'M'));
+      }
+
+      $needParams = $baseParams;
+      $needParams['start_time'] = $shiftStart->format('Y-m-d H:i:s');
+
+      $result = civicrm_api3('VolunteerNeed', 'create', $needParams);
+      if (!empty($result['id'])) {
+        $created[$result['id']] = CRM_Utils_Array::first($result['values']);
+      }
+    }
+  }
+
+  return civicrm_api3_create_success($created, $params, 'VolunteerNeed', 'createbulk');
+}
+
