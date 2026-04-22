@@ -206,7 +206,7 @@ Required vars: volOppData(), searchParams
       </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="need in volOppData()" role="row" class="crm-vol-opp-need-{{need.id}}">
+        <tr ng-repeat="need in volOppData()" role="row" class="crm-vol-opp-need-{{need.id}}" ng-class="{'crm-vol-opp-full': need.is_full}">
           <td class="crm-vol-opp-project">
           {{need.project.title}}
             <span
@@ -228,11 +228,13 @@ Required vars: volOppData(), searchParams
         <td class="crm-vol-opp-time">{{need.display_time}}</td>
         <td class="crm-vol-opp-toggle">
           <input
+            ng-hide="need.is_full"
             type="checkbox"
             ng-checked="need.inCart"
             ng-click="toggleSelection(need)"
             class="crm-form-checkbox"
           />
+          <span ng-show="need.is_full" class="crm-vol-opp-full-label">{{:: ts('Full') }}</span>
         </td>
       </tr>
       </tbody>

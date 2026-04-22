@@ -954,8 +954,6 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
         if (
           // open needs must have a start time; this disqualifies flexible needs
           !empty($need['start_time'])
-          // open needs must not have all positions assigned
-          && ($need['quantity'] > $need['quantity_assigned'])
           // open needs must either:
           && (
             // 1) start after now,
@@ -966,6 +964,10 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
             || (empty($need['end_time']) && empty($need['duration']))
           )
         ) {
+          // Full shifts (all positions assigned) remain in the list so
+          // volunteers can see them, but are flagged so the UI can render
+          // them as unavailable and so signup can reject them.
+          $need['is_full'] = ($need['quantity'] <= $need['quantity_assigned']);
           $this->open_needs[$id] = $need;
         }
       }

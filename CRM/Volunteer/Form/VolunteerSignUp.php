@@ -221,6 +221,13 @@ class CRM_Volunteer_Form_VolunteerSignUp extends CRM_Core_Form {
         continue;
       }
 
+      // Full shifts are kept in open_needs so they remain visible in listings,
+      // but must still be rejected at signup time.
+      if (!empty($openNeeds[$needId]['is_full']) && !$needArr['is_flexible']) {
+        $this->preProcessErrors[2] = ts('One or more volunteer opportunities is at maximum capacity or is in the past.', array('domain' => 'org.civicrm.volunteer'));
+        continue;
+      }
+
       $needArr['quantity_available'] = $openNeeds[$needId]['quantity'] - $openNeeds[$needId]['quantity_assigned'];
     }
   }
