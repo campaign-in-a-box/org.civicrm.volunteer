@@ -670,16 +670,19 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
   public static function getFlexibleNeedID ($project_id) {
     $result = NULL;
 
-    if (is_int($project_id) || ctype_digit($project_id)) {
-      $flexibleNeed = civicrm_api('volunteer_need', 'getvalue', array(
+    if (is_int($project_id) || ctype_digit((string) $project_id)) {
+      // Use get + limit 1: duplicate flexible rows (data issues) would make
+      // getvalue/getsingle fail with "Expected one VolunteerNeed but found N".
+      $flexibleNeed = civicrm_api3('VolunteerNeed', 'get', array(
         'is_active' => 1,
         'is_flexible' => 1,
         'project_id' => $project_id,
         'return' => 'id',
-        'version' => 3,
+        'limit' => 1,
       ));
-      if (($flexibleNeed['is_error'] ?? NULL) !== 1) {
-        $result = (int) $flexibleNeed;
+      if (!empty($flexibleNeed['values'])) {
+        $row = reset($flexibleNeed['values']);
+        $result = (int) $row['id'];
       }
     }
 
