@@ -39,6 +39,16 @@
     $scope.shoppingCart = volOppsInCart;
     $scope.showCartContents = settings.volunteer_show_cart_contents;
 
+    /** Matches volunteer.css @media (max-width: 1000px); used when viewport crosses that breakpoint. */
+    function volOppUseBottomCommitmentsLayout() {
+      return $($window).width() <= 1000;
+    }
+
+    /** Matches volunteer.css @media (max-width: 768px) stacked opportunity / cart cards. */
+    function volOppUseMobileRowTap() {
+      return $($window).width() <= 768;
+    }
+
     // on page load, search based on the URL params
     volOppSearch.search();
 
@@ -180,25 +190,33 @@
 
     $scope.toggleSelection = function (need) {
       need.inCart = !need.hasOwnProperty('inCart') ? true : !need.inCart;
-
-      // if the need was just added to the cart...
-      var delay = 500;
-      var animSrc = (need.inCart) ? ".crm-vol-opp-need-" + need.id : ".crm-vol-opp-cart .ui-widget-content";
-      var animTarget = (need.inCart) ? ".crm-vol-opp-cart .ui-widget-content" : ".crm-vol-opp-need-" + need.id;
-
-      if ($scope.showCartContents) {
-        animSrc = (need.inCart) ? ".crm-vol-opp-need-" + need.id : ".crm-vol-opp-cart-need-" + need.id;
-        animTarget = (need.inCart) ? ".crm-vol-opp-cart-list tr:last" : ".crm-vol-opp-need-" + need.id;
-      }
-      $(animSrc).effect( "transfer", { className: 'crm-vol-opp-cart-transfer', to: $( animTarget ) }, delay);
-
-      $timeout(function() {
       if (need.inCart) {
         volOppsInCart[need.id] = need;
       } else {
         delete volOppsInCart[need.id];
       }
-      }, delay);
+    };
+
+    /** Mobile: tap anywhere on the opportunity card to sign up (toggle), except icons/checkbox. */
+    $scope.volOppOpportunityRowClick = function ($event, need) {
+      if (!volOppUseMobileRowTap()) {
+        return;
+      }
+      if ($($event.target).closest('span.icon, input, a, button, label').length) {
+        return;
+      }
+      $scope.toggleSelection(need);
+    };
+
+    /** Mobile: tap anywhere on a selected commitment row to remove, except icons/trash control. */
+    $scope.volOppCartRowClick = function ($event, need) {
+      if (!volOppUseMobileRowTap()) {
+        return;
+      }
+      if ($($event.target).closest('span.icon, a, button, label').length) {
+        return;
+      }
+      $scope.toggleSelection(need);
     };
 
     $scope.toggleCartList = function () {
@@ -218,18 +236,67 @@
     $scope.cartIsFloating = false;
 
     if (settings.volunteer_floating_cart_enabled) {
-      var cartDelay = 200;
+      /** Y-position (document) where the cart sits in-flow; used to decide when to float. */
+      var cartTop = 0;
+      var lastVolOppNarrowLayout = volOppUseBottomCommitmentsLayout();
 
-      var cartTop = $("div.crm-vol-opp-cart").offset().top;
-      $(window).on("scroll", function (e) {
+      /**
+       * Re-read the cart's in-flow position. Must not run while `.floating_cart` is active:
+       * `position:fixed` makes `.offset().top` useless and breaks scroll behavior.
+       */
+      function refreshCartScrollAnchor() {
+        if ($scope.cartIsFloating) {
+          return;
+        }
+        var $cart = $("div.crm-vol-opp-cart");
+        if (!$cart.length) {
+          return;
+        }
+        var o = $cart.offset();
+        if (o) {
+          cartTop = o.top;
+        }
+      }
+
+      function onVolOppCartScroll() {
         var cartShouldFloat = ($(window).scrollTop() > cartTop);
         if ($scope.cartIsFloating !== cartShouldFloat) {
-          $(".crm-vol-opp-cart").fadeOut(cartDelay);
           $timeout(function () {
             $scope.cartIsFloating = cartShouldFloat;
-            $(".crm-vol-opp-cart").fadeIn(cartDelay);
-          }, cartDelay);
+            if (!cartShouldFloat) {
+              $timeout(refreshCartScrollAnchor, 0);
+            }
+          });
         }
+      }
+
+      function onVolOppCartResize() {
+        var narrowNow = volOppUseBottomCommitmentsLayout();
+        if (narrowNow !== lastVolOppNarrowLayout) {
+          lastVolOppNarrowLayout = narrowNow;
+          $timeout(function () {
+            $scope.cartIsFloating = false;
+            refreshCartScrollAnchor();
+          });
+          return;
+        }
+        refreshCartScrollAnchor();
+      }
+
+      refreshCartScrollAnchor();
+      $timeout(refreshCartScrollAnchor, 0);
+
+      $scope.$watch(function () {
+        return _.size($scope.volOppData());
+      }, function () {
+        $timeout(refreshCartScrollAnchor, 0);
+      });
+
+      $(window).on("scroll", onVolOppCartScroll);
+      $(window).on("resize", onVolOppCartResize);
+      $scope.$on("$destroy", function () {
+        $(window).off("scroll", onVolOppCartScroll);
+        $(window).off("resize", onVolOppCartResize);
       });
     }
   });

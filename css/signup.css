@@ -5,3 +5,65 @@
  {
   display: none;
 }
+
+/* Mobile: stack signup summary like volunteer opportunities (pivot rows). */
+@media (max-width: 768px) {
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table {
+    border: 0;
+  }
+
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table thead {
+    border: none;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.65rem;
+    background: #fff;
+  }
+
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table tbody td {
+    display: block;
+    width: 100% !important;
+    box-sizing: border-box;
+    border: none;
+    padding: 0.4rem 0;
+    text-align: left;
+  }
+
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table tbody td[data-label]:before {
+    content: attr(data-label);
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.2rem;
+    font-size: 0.85em;
+  }
+
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table tbody td.crm-vol-opp-project {
+    order: 1;
+  }
+
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table tbody td.crm-vol-opp-beneficiary {
+    order: 2;
+  }
+
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table tbody td.crm-vol-opp-role {
+    order: 3;
+  }
+
+  .crm-volunteer-signup-summary table.crm-vol-signup-needs-table tbody td.crm-vol-opp-time {
+    order: 4;
+  }
+}
