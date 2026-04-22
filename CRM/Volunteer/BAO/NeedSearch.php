@@ -75,6 +75,7 @@ class CRM_Volunteer_BAO_NeedSearch {
       ));
       if ($flexibleNeed['visibility_id'] === CRM_Core_PseudoConstant::getKey('CRM_Volunteer_BAO_Need', 'visibility_id', 'public')) {
         $needId = $flexibleNeed['id'];
+        $flexibleNeed['quantity_assigned'] = CRM_Volunteer_BAO_Need::getAssignmentCount($needId);
         $results[$needId] = $flexibleNeed;
       }
 
