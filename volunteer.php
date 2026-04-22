@@ -463,11 +463,102 @@ function volunteer_civicrm_alterAPIPermissions($entity, $action, &$params, &$per
   $permissions['volunteer_util']['default'] = array('edit own volunteer projects');
   $permissions['volunteer_project_contact']['default'] = array('edit own volunteer projects');
 
+  // VOL: Allow volunteers to manage (view/edit/delete) their own assignments
+  // without needing project-level permissions. When a VolunteerAssignment API
+  // call targets only the logged-in contact's own records, the "register to
+  // volunteer" permission is sufficient.
+  if ($entity === 'volunteer_assignment'
+    && _volunteer_isOwnAssignmentCall($action, $params)
+  ) {
+    $permissions['volunteer_assignment'][$action] = array('register to volunteer');
+  }
 
   // allow fairly liberal access to the volunteer opp listing UI, which uses lots of API calls
   if (_volunteer_isVolListingApiCall($entity, $action) && CRM_Volunteer_Permission::checkProjectPerms(CRM_Core_Action::VIEW)) {
     $params['check_permissions'] = FALSE;
   }
+}
+
+/**
+ * Determines whether a VolunteerAssignment API call is scoped to the logged-in
+ * contact's own assignments.
+ *
+ * For get, the params must restrict assignee_contact_id to the logged-in
+ * contact. For create (update) and delete, the existing assignment referenced
+ * by id must be assigned to the logged-in contact. Create-without-id (new
+ * signup) is not considered a self-service operation here; signup flows
+ * through CRM_Volunteer_Form_VolunteerSignUp which has its own permission
+ * gate.
+ *
+ * @param string $action
+ * @param array $params
+ * @return bool
+ */
+function _volunteer_isOwnAssignmentCall($action, array $params) {
+  $contactId = CRM_Core_Session::getLoggedInContactID();
+  if (empty($contactId)) {
+    return FALSE;
+  }
+
+  switch ($action) {
+    case 'get':
+    case 'getsingle':
+    case 'getcount':
+      $assignee = $params['assignee_contact_id'] ?? NULL;
+      if ($assignee === 'user_contact_id') {
+        return TRUE;
+      }
+      return !empty($assignee) && (int) $assignee === (int) $contactId;
+
+    case 'create':
+      // Only permit self-service for updates of an existing assignment; new
+      // signups must go through the VolunteerSignUp form.
+      if (empty($params['id'])) {
+        return FALSE;
+      }
+      return _volunteer_assignmentBelongsToContact($params['id'], $contactId);
+
+    case 'delete':
+      if (empty($params['id'])) {
+        return FALSE;
+      }
+      return _volunteer_assignmentBelongsToContact($params['id'], $contactId);
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks whether a given volunteer assignment (activity) is assigned to the
+ * specified contact.
+ *
+ * @param int $activityId
+ * @param int $contactId
+ * @return bool
+ */
+function _volunteer_assignmentBelongsToContact($activityId, $contactId) {
+  $activityId = (int) $activityId;
+  $contactId = (int) $contactId;
+  if (!$activityId || !$contactId) {
+    return FALSE;
+  }
+
+  $activityContactTypes = CRM_Core_OptionGroup::values('activity_contacts', FALSE, FALSE, FALSE, NULL, 'name');
+  $assigneeRecordTypeId = (int) CRM_Utils_Array::key('Activity Assignees', $activityContactTypes);
+  if (!$assigneeRecordTypeId) {
+    return FALSE;
+  }
+
+  $count = CRM_Core_DAO::singleValueQuery(
+    "SELECT COUNT(*) FROM civicrm_activity_contact
+      WHERE activity_id = %1 AND contact_id = %2 AND record_type_id = %3",
+    array(
+      1 => array($activityId, 'Integer'),
+      2 => array($contactId, 'Integer'),
+      3 => array($assigneeRecordTypeId, 'Integer'),
+    )
+  );
+  return (int) $count > 0;
 }
 
 /**
