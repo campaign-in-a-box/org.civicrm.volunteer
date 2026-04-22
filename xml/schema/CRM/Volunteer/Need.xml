@@ -101,6 +101,15 @@
     <add>4.4</add>
   </field>
   <field>
+    <name>is_oversubscription_allowed</name>
+    <type>boolean</type>
+    <title>Allow Oversubscription</title>
+    <default>0</default>
+    <required>true</required>
+    <comment>If TRUE, volunteers may sign up for this need even after the requested quantity has been reached.</comment>
+    <add>2.5</add>
+  </field>
+  <field>
     <name>created</name>
     <type>timestamp</type>
     <title>Date of Creation</title>
