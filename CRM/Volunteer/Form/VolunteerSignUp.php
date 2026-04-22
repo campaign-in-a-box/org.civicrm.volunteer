@@ -221,7 +221,15 @@ class CRM_Volunteer_Form_VolunteerSignUp extends CRM_Core_Form {
         continue;
       }
 
-      $needArr['quantity_available'] = $openNeeds[$needId]['quantity'] - $openNeeds[$needId]['quantity_assigned'];
+      if (!empty($openNeeds[$needId]['is_oversubscription_allowed'])) {
+        // Oversubscription is allowed for this need, so available capacity is
+        // effectively unlimited. Use PHP_INT_MAX so downstream min()/cap logic
+        // doesn't impose an artificial limit.
+        $needArr['quantity_available'] = PHP_INT_MAX;
+      }
+      else {
+        $needArr['quantity_available'] = $openNeeds[$needId]['quantity'] - $openNeeds[$needId]['quantity_assigned'];
+      }
     }
   }
 
