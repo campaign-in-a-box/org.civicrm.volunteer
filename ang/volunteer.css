@@ -27,6 +27,235 @@
   .crm-vol-opp-cart {
     margin-top: 2em;
   }
+
+  /* Put search + opportunity list first; commitments / signup block last (mobile / narrow). */
+  .crm-container.crm-vol-opps-page {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .crm-container.crm-vol-opps-page > .help {
+    order: 1;
+  }
+
+  .crm-container.crm-vol-opps-page > .crm-vol-opp-show-hidden-search {
+    order: 2;
+  }
+
+  .crm-container.crm-vol-opps-page > .crm-vol-opp-search {
+    order: 3;
+  }
+
+  .crm-container.crm-vol-opps-page > .crm-vol-opp-results {
+    order: 4;
+  }
+
+  .crm-container.crm-vol-opps-page > .crm-vol-opp-cart {
+    order: 5;
+    margin-top: 1.5em;
+  }
+
+  .crm-container.crm-vol-opps-page > .clear {
+    display: none;
+  }
+
+  /* Narrow floating cart: dock to bottom instead of a slim strip on the right. */
+  .crm-vol-half-responsive.crm-vol-opp-cart.floating_cart {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    border-radius: 6px 6px 0 0;
+    z-index: 500;
+    box-sizing: border-box;
+    -webkit-transition: none;
+    transition: none;
+  }
+
+  .crm-vol-half-responsive.crm-vol-opp-cart.floating_cart.contents_visible {
+    width: 100%;
+    max-height: min(70vh, 100%);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Room for the docked cart so the last rows of the list are not obscured. */
+  .crm-container.crm-vol-opps-page > .crm-vol-opp-results:not(.messages) {
+    padding-bottom: 9rem;
+  }
+
+  .crm-vol-opp-cart-message-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .crm-vol-opp-cart .crm-vol-opp-cart-large-indicator {
+    font-size: 1.35rem;
+    line-height: 1.2;
+    order: 1;
+  }
+
+  .crm-vol-opp-cart .crm-vol-opp-cart-message {
+    padding: 0;
+    order: 2;
+  }
+
+  .crm-vol-opp-cart .ui-widget-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .crm-vol-opp-cart .crm-vol-opp-cart-list {
+    order: 3;
+  }
+
+  .crm-vol-opp-cart .crm-buttons {
+    order: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .crm-vol-opp-cart .crm-vol-opp-cart-sign-up {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Tighter header area for "Your Selected Volunteer Opportunities" on small screens. */
+  .crm-container.crm-vol-opps-page .crm-vol-opp-cart > h2 {
+    margin-top: 0.2em;
+    margin-bottom: 0.35em;
+  }
+
+  .crm-container.crm-vol-opps-page .crm-vol-opp-cart .ui-widget-content {
+    padding-top: 8px;
+  }
+
+  .crm-container.crm-vol-opps-page .crm-vol-opp-cart .crm-vol-opp-cart-large-indicator {
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+
+  /* Stack each opportunity / cart row; signup & remove actions last. */
+  .crm-vol-opp-results table.display,
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list {
+    border: 0;
+  }
+
+  .crm-vol-opp-results table.display thead,
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list thead {
+    border: none;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  .crm-vol-opp-results table.display tbody tr,
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody tr {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.65rem;
+    background: #fff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .crm-vol-opp-results table.display tbody td,
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td {
+    display: block;
+    width: 100% !important;
+    box-sizing: border-box;
+    border: none;
+    padding: 0.4rem 0;
+    text-align: left;
+  }
+
+  .crm-vol-opp-results table.display tbody td[data-label]:before,
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td[data-label]:before {
+    content: attr(data-label);
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.2rem;
+    font-size: 0.85em;
+  }
+
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-project {
+    order: 1;
+  }
+
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-beneficiary {
+    order: 2;
+  }
+
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-role {
+    order: 3;
+  }
+
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-time {
+    order: 4;
+  }
+
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-toggle {
+    order: 5;
+    padding-top: 0.65rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid #ddd;
+    cursor: default;
+  }
+
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-toggle .crm-form-checkbox {
+    width: 1.35rem;
+    height: 1.35rem;
+    min-width: 1.35rem;
+    min-height: 1.35rem;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td.crm-vol-opp-project {
+    order: 1;
+  }
+
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td.crm-vol-opp-role {
+    order: 2;
+  }
+
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td.crm-vol-opp-time {
+    order: 3;
+  }
+
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td.crm-vol-opp-toggle {
+    order: 4;
+    padding-top: 0.65rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid #ddd;
+    cursor: default;
+  }
+
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td.crm-vol-opp-toggle .icon {
+    padding: 0.35rem 0.5rem;
+    cursor: pointer;
+  }
 }
 
 .crm-vol-opp-results span.beneficiary {

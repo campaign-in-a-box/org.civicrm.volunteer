@@ -3,7 +3,7 @@ Controller: VolOppsCtrl
 Required vars: volOppData(), searchParams
 -->
 
-<div class="crm-container">
+<div class="crm-container crm-vol-opps-page">
   <div class="help">
     <p>
       {{helpText()}}
@@ -145,29 +145,29 @@ Required vars: volOppData(), searchParams
         </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="need in shoppingCart" role="row" class="crm-vol-opp-cart-need-{{need.id}}">
-            <td class="crm-vol-opp-project">
+          <tr ng-repeat="need in shoppingCart" role="row" class="crm-vol-opp-cart-need-{{need.id}}" ng-click="volOppCartRowClick($event, need)">
+            <td class="crm-vol-opp-project" data-label="{{:: ts('Project') }}">
             {{need.project.title}}
               <span
                 class="icon ui-icon-comment"
                 ng-show="need.project.description"
-                ng-click="showProjectDescription(need.project)">
+                ng-click="showProjectDescription(need.project); $event.stopPropagation()">
               </span>
           </td>
-          <td class="crm-vol-opp-role">{{need.role_label}}
+          <td class="crm-vol-opp-role" data-label="{{:: ts('Role') }}">{{need.role_label}}
               <span
                 class="icon ui-icon-comment"
                 ng-show="need.role_description"
-                ng-click="showRoleDescription(need)">
+                ng-click="showRoleDescription(need); $event.stopPropagation()">
               </span>
           </td>
-          <td class="crm-vol-opp-time">{{need.display_time}}</td>
-          <td class="crm-vol-opp-toggle">
+          <td class="crm-vol-opp-time" data-label="{{:: ts('Time') }}">{{need.display_time}}</td>
+          <td class="crm-vol-opp-toggle" data-label="{{:: ts('Remove') }}">
               <span
                 class="icon ui-icon-trash"
                 ng-checked="need.inCart"
-                ng-click="toggleSelection(need)"
-            </span>
+                ng-click="toggleSelection(need); $event.stopPropagation()"
+              ></span>
           </td>
         </tr>
         </tbody>
@@ -206,31 +206,31 @@ Required vars: volOppData(), searchParams
       </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="need in volOppData()" role="row" class="crm-vol-opp-need-{{need.id}}">
-          <td class="crm-vol-opp-project">
+        <tr ng-repeat="need in volOppData()" role="row" class="crm-vol-opp-need-{{need.id}}" ng-click="volOppOpportunityRowClick($event, need)">
+          <td class="crm-vol-opp-project" data-label="{{:: ts('Project') }}">
           {{need.project.title}}
             <span
               class="icon ui-icon-comment"
               ng-show="need.project.description"
-              ng-click="showProjectDescription(need.project)">
+              ng-click="showProjectDescription(need.project); $event.stopPropagation()">
             </span>
         </td>
-        <td class="crm-vol-opp-beneficiary">
+        <td class="crm-vol-opp-beneficiary" data-label="{{:: ts('With') }}">
           <span class="beneficiary" ng-repeat="ben in need.project.beneficiaries">{{ben.display_name}}</span>
         </td>
-        <td class="crm-vol-opp-role">{{need.role_label}}
+        <td class="crm-vol-opp-role" data-label="{{:: ts('Role') }}">{{need.role_label}}
             <span
               class="icon ui-icon-comment"
               ng-show="need.role_description"
-              ng-click="showRoleDescription(need)">
+              ng-click="showRoleDescription(need); $event.stopPropagation()">
             </span>
         </td>
-        <td class="crm-vol-opp-time">{{need.display_time}}</td>
-        <td class="crm-vol-opp-toggle">
+        <td class="crm-vol-opp-time" data-label="{{:: ts('Time') }}">{{need.display_time}}</td>
+        <td class="crm-vol-opp-toggle" data-label="{{:: ts('Sign up!') }}">
           <input
             type="checkbox"
             ng-checked="need.inCart"
-            ng-click="toggleSelection(need)"
+            ng-click="toggleSelection(need); $event.stopPropagation()"
             class="crm-form-checkbox"
           />
         </td>

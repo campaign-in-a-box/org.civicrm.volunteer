@@ -12,16 +12,19 @@
   </p>
 
   <div class="crm-volunteer-signup-summary">
-    <table>
-      <tr>
-        <th class="crm-vol-opp-project">{ts domain='org.civicrm.volunteer'}Project Title{/ts}</th>
-        <th class="crm-vol-opp-beneficiary">{ts domain='org.civicrm.volunteer'}Project Beneficiaries{/ts}</th>
-        <th class="crm-vol-opp-role">{ts domain='org.civicrm.volunteer'}Role{/ts}</th>
-        <th class="crm-vol-opp-time">{ts domain='org.civicrm.volunteer'}Date and Time{/ts}</th>
-      </tr>
+    <table class="crm-vol-signup-needs-table" role="grid">
+      <thead>
+        <tr role="row">
+          <th class="crm-vol-opp-project">{ts domain='org.civicrm.volunteer'}Project Title{/ts}</th>
+          <th class="crm-vol-opp-beneficiary">{ts domain='org.civicrm.volunteer'}Project Beneficiaries{/ts}</th>
+          <th class="crm-vol-opp-role">{ts domain='org.civicrm.volunteer'}Role{/ts}</th>
+          <th class="crm-vol-opp-time">{ts domain='org.civicrm.volunteer'}Date and Time{/ts}</th>
+        </tr>
+      </thead>
+      <tbody>
       {foreach from=$volunteerNeeds key=key item=volunteerNeed}
-        <tr>
-          <td class="crm-vol-opp-project">
+        <tr role="row">
+          <td class="crm-vol-opp-project" data-label="{ts domain='org.civicrm.volunteer'}Project Title{/ts}">
             {$volunteerNeed.project.title}
             {if $volunteerNeed.project.description}
               <span class="icon ui-icon-comment crm-vol-description">
@@ -29,8 +32,8 @@
               </span>
             {/if}
           </td>
-          <td class="crm-vol-opp-beneficiary">{$volunteerNeed.project.beneficiaries}</td>
-          <td class="crm-vol-opp-role">
+          <td class="crm-vol-opp-beneficiary" data-label="{ts domain='org.civicrm.volunteer'}Project Beneficiaries{/ts}">{$volunteerNeed.project.beneficiaries}</td>
+          <td class="crm-vol-opp-role" data-label="{ts domain='org.civicrm.volunteer'}Role{/ts}">
             {$volunteerNeed.role_label}
             {if $volunteerNeed.role_description}
               <span class="icon ui-icon-comment crm-vol-description">
@@ -38,9 +41,10 @@
               </span>
             {/if}
           </td>
-          <td class="crm-vol-opp-time">{$volunteerNeed.display_time}</td>
+          <td class="crm-vol-opp-time" data-label="{ts domain='org.civicrm.volunteer'}Date and Time{/ts}">{$volunteerNeed.display_time}</td>
         </tr>
       {/foreach}
+      </tbody>
     </table>
   </div>
 
