@@ -47,6 +47,7 @@
         <th id="quantity">{ts domain='org.civicrm.volunteer'}Volunteers Needed{/ts}</th>
         <th id="time_components">{ts domain='org.civicrm.volunteer'}Time{/ts}</th>
         <th id="visibility">{ts domain='org.civicrm.volunteer'}Public?{/ts}</th>
+        <th id="is_oversubscription_allowed" title="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}Allow more volunteers to sign up than needed.{/ts}">{ts domain='org.civicrm.volunteer'}Allow Over?{/ts}</th>
         <th>Enabled?</th>
         <th></th>
       </tr>
@@ -116,6 +117,7 @@
     </table>
   </td>
   <td><input type="checkbox" name="visibility_id" value="<%= visibilityValue %>"></td>
+  <td><input type="checkbox" name="is_oversubscription_allowed" value="1"></td>
   <td><input type="checkbox" name="is_active" value="1"></td>
   <td><a href="#" class="crm-vol-del action-item crm-hover-button small-popup" title="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}Delete{/ts}">{ts}Delete{/ts}</a></td>
 </script>

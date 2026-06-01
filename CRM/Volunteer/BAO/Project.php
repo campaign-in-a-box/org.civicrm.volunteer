@@ -957,8 +957,12 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
         if (
           // open needs must have a start time; this disqualifies flexible needs
           !empty($need['start_time'])
-          // open needs must not have all positions assigned
-          && ($need['quantity'] > $need['quantity_assigned'])
+          // open needs must not have all positions assigned, unless
+          // oversubscription has been explicitly allowed for this need
+          && (
+            $need['quantity'] > $need['quantity_assigned']
+            || !empty($need['is_oversubscription_allowed'])
+          )
           // open needs must either:
           && (
             // 1) start after now,
