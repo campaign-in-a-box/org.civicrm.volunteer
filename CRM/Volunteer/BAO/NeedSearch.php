@@ -70,12 +70,17 @@ class CRM_Volunteer_BAO_NeedSearch {
     foreach ($projects as $project) {
       $results = array();
 
-      $flexibleNeed = civicrm_api3('VolunteerNeed', 'getsingle', array(
-        'id' => $project->flexible_need_id,
-      ));
-      if ($flexibleNeed['visibility_id'] === CRM_Core_PseudoConstant::getKey('CRM_Volunteer_BAO_Need', 'visibility_id', 'public')) {
-        $needId = $flexibleNeed['id'];
-        $results[$needId] = $flexibleNeed;
+      $flexibleNeedId = $project->flexible_need_id;
+      // Without a concrete ID, APIv3 treats the filter as absent and getsingle
+      // matches every VolunteerNeed ("Expected one ... but found N").
+      if ($flexibleNeedId) {
+        $flexibleNeed = civicrm_api3('VolunteerNeed', 'getsingle', array(
+          'id' => $flexibleNeedId,
+        ));
+        if ($flexibleNeed['visibility_id'] === CRM_Core_PseudoConstant::getKey('CRM_Volunteer_BAO_Need', 'visibility_id', 'public')) {
+          $needId = $flexibleNeed['id'];
+          $results[$needId] = $flexibleNeed;
+        }
       }
 
       $openNeeds = $project->open_needs;
