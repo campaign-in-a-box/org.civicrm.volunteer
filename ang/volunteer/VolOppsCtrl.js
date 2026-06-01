@@ -166,6 +166,21 @@
       $location.path('/volunteer/my-shifts');
     };
 
+    $scope.hasTextContent = function (html) {
+      if (!html) {
+        return false;
+      }
+      return String(html).replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim().length > 0;
+    };
+
+    $scope.hasProjectDescription = function (project) {
+      return project && $scope.hasTextContent(project.description);
+    };
+
+    $scope.hasRoleDescription = function (need) {
+      return need && $scope.hasTextContent(need.role_description);
+    };
+
     $scope.showProjectDescription = function (project) {
       var description = project.description;
       var addressBlock = '';

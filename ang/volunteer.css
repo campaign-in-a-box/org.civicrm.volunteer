@@ -268,6 +268,17 @@
   cursor: pointer;
 }
 
+.crm-vol-detail-icon {
+  cursor: pointer;
+  color: #2786c2;
+  margin-left: 0.35em;
+  vertical-align: middle;
+}
+.crm-vol-detail-icon:hover,
+.crm-vol-detail-icon:focus {
+  color: #12547a;
+}
+
 .crm-vol-opp-results {
   margin-top: 2em;
 }
