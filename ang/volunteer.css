@@ -215,8 +215,12 @@
     order: 4;
   }
 
-  .crm-vol-opp-results table.display tbody td.crm-vol-opp-toggle {
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-slots {
     order: 5;
+  }
+
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-toggle {
+    order: 6;
     padding-top: 0.65rem;
     margin-top: 0.25rem;
     border-top: 1px solid #ddd;
@@ -277,6 +281,37 @@
 .crm-vol-detail-icon:hover,
 .crm-vol-detail-icon:focus {
   color: #12547a;
+}
+
+dialog.crm-vol-detail-alert {
+  max-width: min(36em, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  padding: 1rem 1.25rem;
+  border: none;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+dialog.crm-vol-detail-alert::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.crm-vol-detail-alert-content {
+  margin: 0.75rem 0 1rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  dialog.crm-vol-detail-alert {
+    width: calc(100vw - 1.5rem);
+    max-height: calc(100dvh - 2rem);
+  }
+
+  .crm-vol-detail-icon {
+    padding: 0.35rem;
+    margin-left: 0.15em;
+  }
 }
 
 .crm-vol-opp-results {
