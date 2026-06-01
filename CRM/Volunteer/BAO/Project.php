@@ -957,12 +957,6 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
         if (
           // open needs must have a start time; this disqualifies flexible needs
           !empty($need['start_time'])
-          // open needs must not have all positions assigned, unless
-          // oversubscription has been explicitly allowed for this need
-          && (
-            $need['quantity'] > $need['quantity_assigned']
-            || !empty($need['is_oversubscription_allowed'])
-          )
           // open needs must either:
           && (
             // 1) start after now,
@@ -973,6 +967,14 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
             || (empty($need['end_time']) && empty($need['duration']))
           )
         ) {
+          // Full shifts (all positions assigned) remain in the list so
+          // volunteers can see them, but are flagged so the UI can render
+          // them as unavailable and so signup can reject them. Oversubscription
+          // opt-in keeps full shifts open for additional signups.
+          $need['is_full'] = (
+            $need['quantity'] <= $need['quantity_assigned']
+            && empty($need['is_oversubscription_allowed'])
+          );
           $this->open_needs[$id] = $need;
         }
       }

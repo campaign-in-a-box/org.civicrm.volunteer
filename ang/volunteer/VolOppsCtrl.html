@@ -206,7 +206,7 @@ Required vars: volOppData(), searchParams
       </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="need in volOppData()" role="row" class="crm-vol-opp-need-{{need.id}}" ng-click="volOppOpportunityRowClick($event, need)">
+        <tr ng-repeat="need in volOppData()" role="row" class="crm-vol-opp-need-{{need.id}}" ng-class="{'crm-vol-opp-full': need.is_full}" ng-click="volOppOpportunityRowClick($event, need)">
           <td class="crm-vol-opp-project" data-label="{{:: ts('Project') }}">
           {{need.project.title}}
             <span
@@ -228,11 +228,13 @@ Required vars: volOppData(), searchParams
         <td class="crm-vol-opp-time" data-label="{{:: ts('Time') }}">{{need.display_time}}</td>
         <td class="crm-vol-opp-toggle" data-label="{{:: ts('Sign up!') }}">
           <input
+            ng-hide="need.is_full"
             type="checkbox"
             ng-checked="need.inCart"
             ng-click="toggleSelection(need); $event.stopPropagation()"
             class="crm-form-checkbox"
           />
+          <span ng-show="need.is_full" class="crm-vol-opp-full-label">{{:: ts('Full') }}</span>
         </td>
       </tr>
       </tbody>
