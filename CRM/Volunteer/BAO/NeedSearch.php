@@ -99,8 +99,28 @@ class CRM_Volunteer_BAO_NeedSearch {
     }
 
     $this->getSearchResultsProjectData();
+    $this->annotateCurrentUserSignups();
     usort($this->searchResults, array($this, "usortDateAscending"));
     return $this->searchResults;
+  }
+
+  /**
+   * Flags needs the logged-in contact is already assigned to.
+   */
+  private function annotateCurrentUserSignups() {
+    $contactId = CRM_Core_Session::getLoggedInContactID();
+    if (!$contactId || empty($this->searchResults)) {
+      return;
+    }
+
+    $signedUpNeedIds = array_flip(CRM_Volunteer_BAO_Need::getSignedUpNeedIdsForContact(
+      $contactId,
+      array_keys($this->searchResults)
+    ));
+
+    foreach ($this->searchResults as &$need) {
+      $need['current_user_signed_up'] = isset($signedUpNeedIds[(int) $need['id']]);
+    }
   }
 
   /**

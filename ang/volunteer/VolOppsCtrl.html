@@ -231,11 +231,12 @@ Required vars: volOppData(), searchParams
         </td>
         <td class="crm-vol-opp-time" data-label="{{:: ts('Time') }}">{{need.display_time}}</td>
         <td class="crm-vol-opp-slots" data-label="{{:: ts('Slots') }}">
-          <span ng-if="need.quantity > 0">
-            {{:: ts('%1 of %2 left', {1: (need.quantity - (need.quantity_assigned || 0)), 2: need.quantity}) }}
-            <span class="description">({{:: ts('%1 taken', {1: (need.quantity_assigned || 0)}) }})</span>
+          <span ng-if="!need.current_user_signed_up && need.is_full">{{:: ts('Full') }}</span>
+          <span ng-if="!need.current_user_signed_up && !need.is_full && need.quantity > 0">
+            {{ ts('%1 of %2 left', {1: slotsRemaining(need), 2: need.quantity}) }}
+            <span class="description">({{ ts('%1 taken', {1: (need.quantity_assigned || 0)}) }})</span>
           </span>
-          <span ng-if="!(need.quantity > 0)">{{:: ts('Open') }}</span>
+          <span ng-if="!need.current_user_signed_up && !need.is_full && !(need.quantity > 0)">{{:: ts('Open') }}</span>
         </td>
         <td class="crm-vol-opp-toggle" data-label="{{:: ts('Sign up!') }}">
           <input

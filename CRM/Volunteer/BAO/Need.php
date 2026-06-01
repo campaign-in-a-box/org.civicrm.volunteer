@@ -238,4 +238,32 @@ class CRM_Volunteer_BAO_Need extends CRM_Volunteer_DAO_Need {
       'volunteer_need_id' => $need_id,
     ));
   }
+
+  /**
+   * Returns need IDs from the given list where the contact has an active assignment.
+   *
+   * @param int $contactId
+   * @param array $needIds
+   * @return array
+   */
+  public static function getSignedUpNeedIdsForContact($contactId, array $needIds) {
+    CRM_Utils_Type::validate($contactId, 'Integer');
+    $needIds = array_filter(array_map('intval', $needIds));
+    if (empty($needIds)) {
+      return array();
+    }
+
+    $assignments = civicrm_api3('VolunteerAssignment', 'get', array(
+      'assignee_contact_id' => $contactId,
+      'volunteer_need_id' => array('IN' => $needIds),
+      'options' => array('limit' => 0),
+      'return' => array('volunteer_need_id'),
+    ));
+
+    $signedUpNeedIds = array();
+    foreach ($assignments['values'] as $assignment) {
+      $signedUpNeedIds[] = (int) $assignment['volunteer_need_id'];
+    }
+    return $signedUpNeedIds;
+  }
 }

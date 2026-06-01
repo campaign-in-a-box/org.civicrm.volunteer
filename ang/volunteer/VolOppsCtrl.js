@@ -188,6 +188,10 @@
       CRM.alert(need.role_description, need.role_label, 'info', {expires: 0});
     };
 
+    $scope.slotsRemaining = function (need) {
+      return Math.max(0, (need.quantity || 0) - (need.quantity_assigned || 0));
+    };
+
     $scope.toggleSelection = function (need) {
       need.inCart = !need.hasOwnProperty('inCart') ? true : !need.inCart;
       if (need.inCart) {
