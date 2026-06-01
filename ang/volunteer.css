@@ -148,14 +148,16 @@
     margin-bottom: 4px;
   }
 
-  /* Stack each opportunity / cart row; signup & remove actions last. */
+  /* Stack each opportunity / cart / my-shifts row; actions last. */
   .crm-vol-opp-results table.display,
-  .crm-vol-opp-cart table.crm-vol-opp-cart-list {
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list,
+  .crm-vol-my-shifts-table {
     border: 0;
   }
 
   .crm-vol-opp-results table.display thead,
-  .crm-vol-opp-cart table.crm-vol-opp-cart-list thead {
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list thead,
+  .crm-vol-my-shifts-table thead {
     border: none;
     clip: rect(0 0 0 0);
     height: 1px;
@@ -167,7 +169,8 @@
   }
 
   .crm-vol-opp-results table.display tbody tr,
-  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody tr {
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody tr,
+  .crm-vol-my-shifts-table tbody tr {
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -181,7 +184,8 @@
   }
 
   .crm-vol-opp-results table.display tbody td,
-  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td {
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td,
+  .crm-vol-my-shifts-table tbody td {
     display: block;
     width: 100% !important;
     box-sizing: border-box;
@@ -191,7 +195,8 @@
   }
 
   .crm-vol-opp-results table.display tbody td[data-label]:before,
-  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td[data-label]:before {
+  .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td[data-label]:before,
+  .crm-vol-my-shifts-table tbody td[data-label]:before {
     content: attr(data-label);
     display: block;
     font-weight: bold;
@@ -199,19 +204,23 @@
     font-size: 0.85em;
   }
 
-  .crm-vol-opp-results table.display tbody td.crm-vol-opp-project {
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-project,
+  .crm-vol-my-shifts-table tbody td.crm-vol-opp-project {
     order: 1;
   }
 
-  .crm-vol-opp-results table.display tbody td.crm-vol-opp-beneficiary {
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-beneficiary,
+  .crm-vol-my-shifts-table tbody td.crm-vol-opp-beneficiary {
     order: 2;
   }
 
-  .crm-vol-opp-results table.display tbody td.crm-vol-opp-role {
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-role,
+  .crm-vol-my-shifts-table tbody td.crm-vol-opp-role {
     order: 3;
   }
 
-  .crm-vol-opp-results table.display tbody td.crm-vol-opp-time {
+  .crm-vol-opp-results table.display tbody td.crm-vol-opp-time,
+  .crm-vol-my-shifts-table tbody td.crm-vol-opp-time {
     order: 4;
   }
 
@@ -254,6 +263,13 @@
     margin-top: 0.25rem;
     border-top: 1px solid #ddd;
     cursor: default;
+  }
+
+  .crm-vol-my-shifts-table tbody td.crm-vol-my-shift-actions {
+    order: 5;
+    padding-top: 0.65rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid #ddd;
   }
 
   .crm-vol-opp-cart table.crm-vol-opp-cart-list tbody td.crm-vol-opp-toggle .icon {

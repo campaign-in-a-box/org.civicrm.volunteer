@@ -270,9 +270,11 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
     }
 
     $beneficiariesByProject = array();
+    $projectDisplayById = array();
     foreach ($rows as &$row) {
       if (!empty($row['is_flexible'])) {
         $row['role_label'] = CRM_Volunteer_BAO_Need::getFlexibleRoleLabel();
+        $row['role_description'] = NULL;
         $row['display_time'] = CRM_Volunteer_BAO_Need::getFlexibleDisplayTime();
       }
       else {
@@ -283,6 +285,7 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
             'value'
           );
           $row['role_label'] = $role['label'] ?? NULL;
+          $row['role_description'] = $role['description'] ?? NULL;
         }
         if (!empty($row['start_time'])) {
           $row['display_time'] = CRM_Volunteer_BAO_Need::getTimes(
@@ -297,8 +300,62 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
       if ($projectId && !array_key_exists($projectId, $beneficiariesByProject)) {
         $beneficiariesByProject[$projectId] = self::getProjectBeneficiaries($projectId);
       }
+      if ($projectId && !array_key_exists($projectId, $projectDisplayById)) {
+        $projectDisplayById[$projectId] = self::getProjectDisplayData($projectId);
+      }
       $row['beneficiaries'] = $beneficiariesByProject[$projectId] ?? array();
+      if ($projectId) {
+        $row['project'] = array_merge(
+          array('title' => $row['project_title'] ?? NULL),
+          $projectDisplayById[$projectId]
+        );
+      }
     }
+  }
+
+  /**
+   * @param int $projectId
+   * @return array
+   *   Project fields used by volunteer UI detail popups.
+   */
+  private static function getProjectDisplayData($projectId) {
+    $api = civicrm_api3('VolunteerProject', 'getsingle', array(
+      'id' => $projectId,
+      'api.Campaign.getvalue' => array(
+        'return' => 'title',
+      ),
+      'api.LocBlock.getsingle' => array(
+        'api.Address.getsingle' => array(),
+      ),
+    ));
+
+    $data = array(
+      'description' => $api['description'] ?? NULL,
+      'campaign_title' => empty($api['campaign_id']) ? NULL : ($api['api.Campaign.getvalue'] ?? NULL),
+      'location' => array(
+        'city' => NULL,
+        'country' => NULL,
+        'postal_code' => NULL,
+        'state_province' => NULL,
+        'street_address' => NULL,
+      ),
+    );
+
+    if (!empty($api['loc_block_id']) && !empty($api['api.LocBlock.getsingle']['address_id'])) {
+      $address = $api['api.LocBlock.getsingle']['api.Address.getsingle'];
+      $countryId = $address['country_id'] ?? NULL;
+      $stateProvinceId = $address['state_province_id'] ?? NULL;
+
+      $data['location'] = array(
+        'city' => $address['city'] ?? NULL,
+        'country' => $countryId ? CRM_Core_PseudoConstant::country($countryId) : NULL,
+        'postal_code' => $address['postal_code'] ?? NULL,
+        'state_province' => $stateProvinceId ? CRM_Core_PseudoConstant::stateProvince($stateProvinceId) : NULL,
+        'street_address' => $address['street_address'] ?? NULL,
+      );
+    }
+
+    return $data;
   }
 
   /**

@@ -43,11 +43,86 @@
       return d.toLocaleString();
     };
 
-    $scope.formatBeneficiaries = function (shift) {
-      if (!shift.beneficiaries || !shift.beneficiaries.length) {
-        return '—';
+    $scope.hasTextContent = function (html) {
+      if (!html) {
+        return false;
       }
-      return _.map(shift.beneficiaries, 'display_name').join(', ');
+      return String(html).replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim().length > 0;
+    };
+
+    $scope.hasProjectDescription = function (project) {
+      return project && $scope.hasTextContent(project.description);
+    };
+
+    $scope.hasRoleDescription = function (shift) {
+      return shift && $scope.hasTextContent(shift.role_description);
+    };
+
+    $scope.showDetailAlert = function (title, html) {
+      var existing = document.querySelector('dialog.crm-vol-detail-alert');
+      if (existing) {
+        existing.remove();
+      }
+
+      var dialog = document.createElement('dialog');
+      dialog.className = 'crm-dialog crm-alert crm-vol-detail-alert';
+
+      if (title) {
+        var heading = document.createElement('h1');
+        heading.textContent = title;
+        dialog.appendChild(heading);
+      }
+
+      var content = document.createElement('div');
+      content.className = 'crm-vol-detail-alert-content';
+      content.innerHTML = html;
+      dialog.appendChild(content);
+
+      var buttons = document.createElement('div');
+      buttons.className = 'crm-buttons crm-flex-justify-end';
+      var ok = document.createElement('button');
+      ok.type = 'button';
+      ok.className = 'crm-button';
+      ok.textContent = ts('OK');
+      ok.addEventListener('click', function () {
+        dialog.close();
+        dialog.remove();
+      });
+      buttons.appendChild(ok);
+      dialog.appendChild(buttons);
+
+      document.body.appendChild(dialog);
+      dialog.showModal();
+    };
+
+    $scope.showProjectDescription = function (project) {
+      var description = project.description;
+      var addressBlock = '';
+      var campaignBlock = '';
+
+      if (project.hasOwnProperty('campaign_title') && !_.isEmpty(project.campaign_title)) {
+        campaignBlock = '<p><strong>' + ts('Campaign:') + '</strong><br />' + project.campaign_title + '</p>';
+      }
+
+      if (project.hasOwnProperty('location')) {
+        if (!_.isEmpty(project.location.street_address)) {
+          addressBlock += project.location.street_address + '<br />';
+        }
+        if (!_.isEmpty(project.location.city)) {
+          addressBlock += project.location.city + '<br />';
+        }
+        if (!_.isEmpty(project.location.postal_code)) {
+          addressBlock += project.location.postal_code;
+        }
+      }
+      if (!_.isEmpty(addressBlock)) {
+        addressBlock = '<p><strong>Location:</strong><br />' + addressBlock + '</p>';
+      }
+      $scope.showDetailAlert(project.title, description + campaignBlock + addressBlock);
+    };
+
+    $scope.showRoleDescription = function (shift) {
+      $scope.showDetailAlert(shift.role_label, shift.role_description);
     };
 
     if ($scope.contactId) {

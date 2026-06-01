@@ -160,7 +160,7 @@ class CRM_Volunteer_Form_Log extends CRM_Core_Form {
       $this->add('datepicker', "field[$rowNumber][start_date]", '', $datePickerAttr);
       $this->add('select', "field[$rowNumber][volunteer_status]", '', $volunteerStatus);
       $this->add('text', "field[$rowNumber][scheduled_duration]", '', array_merge($attributes, $extra));
-      $this->add('text', "field[$rowNumber][actual_duration]", '', array_merge($attributes, $extra));
+      $this->add('text', "field[$rowNumber][actual_duration]", '', $attributes);
       $this->add('text', "field[$rowNumber][activity_id]");
     }
 
