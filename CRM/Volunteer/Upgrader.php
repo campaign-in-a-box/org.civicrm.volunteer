@@ -59,7 +59,6 @@ class CRM_Volunteer_Upgrader extends CRM_Extension_Upgrader_Base {
     $this->schemaUpgrade20();
     $this->addNeedEndDate();
     $this->installNeedMetaDateFields();
-    $this->installNeedOversubscriptionField();
     
     // uncomment the next line to insert sample data
     // $this->executeSqlFile('sql/volunteer_sample.mysql');
@@ -463,30 +462,6 @@ class CRM_Volunteer_Upgrader extends CRM_Extension_Upgrader_Base {
     $this->ctx->log->info('Applying update 2301 - Add default value to volunteer_need.created column');
     CRM_Core_DAO::executeQuery('ALTER TABLE `civicrm_volunteer_need` CHANGE COLUMN `created` `created` timestamp DEFAULT CURRENT_TIMESTAMP');
     return TRUE;
-  }
-
-  /**
-   * Adds the is_oversubscription_allowed flag to civicrm_volunteer_need.
-   *
-   * Used in both the install and the upgrade.
-   *
-   * @return bool
-   */
-  public function installNeedOversubscriptionField() {
-    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_volunteer_need', 'is_oversubscription_allowed', FALSE)) {
-      return TRUE;
-    }
-    $query = CRM_Core_DAO::executeQuery("
-      ALTER TABLE `civicrm_volunteer_need`
-      ADD `is_oversubscription_allowed` tinyint NOT NULL DEFAULT 0
-      COMMENT 'If TRUE, volunteers may sign up for this need even after the requested quantity has been reached.'
-      AFTER `is_active`");
-    return !is_a($query, 'DB_Error');
-  }
-
-  public function upgrade_2400() {
-    $this->ctx->log->info('Applying update 2400 - Adding is_oversubscription_allowed to volunteer needs');
-    return $this->installNeedOversubscriptionField();
   }
 
   public function uninstall() {

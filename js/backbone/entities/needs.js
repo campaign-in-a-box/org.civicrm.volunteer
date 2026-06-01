@@ -8,7 +8,6 @@ CRM.volunteerApp.module('Entities', function(Entities, volunteerApp, Backbone, M
       'display_end_date': null, // generated in getNeeds
       'display_end_time': null, // generated in getNeeds
       'is_active' : 1,
-      'is_oversubscription_allowed': 0,
       'is_flexible': 0,
       'duration': 0,
       'role_id': null,

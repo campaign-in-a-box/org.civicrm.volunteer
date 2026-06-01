@@ -969,12 +969,8 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
         ) {
           // Full shifts (all positions assigned) remain in the list so
           // volunteers can see them, but are flagged so the UI can render
-          // them as unavailable and so signup can reject them. Oversubscription
-          // opt-in keeps full shifts open for additional signups.
-          $need['is_full'] = (
-            $need['quantity'] <= $need['quantity_assigned']
-            && empty($need['is_oversubscription_allowed'])
-          );
+          // them as unavailable and so signup can reject them.
+          $need['is_full'] = ($need['quantity'] <= $need['quantity_assigned']);
           $this->open_needs[$id] = $need;
         }
       }

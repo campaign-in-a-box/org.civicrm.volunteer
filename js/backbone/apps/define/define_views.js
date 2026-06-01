@@ -57,10 +57,6 @@
           this.$("[name='is_active']").prop("checked", true);
         }
 
-        if (this.model.get('is_oversubscription_allowed') == '1') {
-          this.$("[name='is_oversubscription_allowed']").prop("checked", true);
-        }
-
         this.initializeTimeComponents();
       },
 
@@ -196,9 +192,6 @@
             value = e.currentTarget.checked ? e.currentTarget.value : visibility.admin;
             break;
           case 'is_active':
-            value = e.currentTarget.checked ? e.currentTarget.value : 0;
-            break;
-          case 'is_oversubscription_allowed':
             value = e.currentTarget.checked ? e.currentTarget.value : 0;
             break;
         }

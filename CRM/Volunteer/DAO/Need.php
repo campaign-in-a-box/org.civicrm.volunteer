@@ -100,13 +100,6 @@ class CRM_Volunteer_DAO_Need extends CRM_Core_DAO {
   public $is_active;
 
   /**
-   * If TRUE, volunteers may sign up for this need even after the requested quantity has been reached.
-   *
-   * @var bool
-   */
-  public $is_oversubscription_allowed;
-
-  /**
    * @var timestamp
    */
   public $created;
@@ -293,20 +286,6 @@ class CRM_Volunteer_DAO_Need extends CRM_Core_DAO {
           'bao' => 'CRM_Volunteer_DAO_Need',
           'localizable' => 0,
           'add' => '4.4',
-        ],
-        'is_oversubscription_allowed' => [
-          'name' => 'is_oversubscription_allowed',
-          'type' => CRM_Utils_Type::T_BOOLEAN,
-          'title' => E::ts('Allow Oversubscription'),
-          'description' => E::ts('If TRUE, volunteers may sign up for this need even after the requested quantity has been reached.'),
-          'required' => TRUE,
-          'where' => 'civicrm_volunteer_need.is_oversubscription_allowed',
-          'default' => '0',
-          'table_name' => 'civicrm_volunteer_need',
-          'entity' => 'Need',
-          'bao' => 'CRM_Volunteer_DAO_Need',
-          'localizable' => 0,
-          'add' => '2.5',
         ],
         'created' => [
           'name' => 'created',
