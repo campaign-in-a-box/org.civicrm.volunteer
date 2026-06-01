@@ -194,6 +194,17 @@
           case 'is_active':
             value = e.currentTarget.checked ? e.currentTarget.value : 0;
             break;
+          case 'quantity':
+            if (value === '' || value === null) {
+              value = null;
+            }
+            else {
+              value = parseInt(value, 10);
+              if (isNaN(value) || value < 0) {
+                value = null;
+              }
+            }
+            break;
         }
 
         // update only if a change occurred

@@ -59,6 +59,12 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
    * @return array of CRM_Volunteer_BAO_Project objects
    */
   public static function retrieve(array $params) {
+    foreach (array('assignee_contact_id', 'target_contact_id') as $contactParam) {
+      if (($params[$contactParam] ?? NULL) === 'user_contact_id') {
+        $params[$contactParam] = CRM_Core_Session::getLoggedInContactID();
+      }
+    }
+
     $activity_fields = CRM_Activity_DAO_Activity::fields();
     $contact_fields = CRM_Contact_DAO_Contact::fields();
     $custom_fields = self::getCustomFields();
@@ -132,15 +138,36 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
         $dataType = 'Int';
         $fieldName = 'contact_id';
         $tableName = 'tgt'; // this is an alias for civicrm_activity_contact
-      } elseif ($key == 'assignee_contact_id') {
+      }       elseif ($key == 'assignee_contact_id') {
         $dataType = 'Int';
         $fieldName = 'contact_id';
         $tableName = 'assignee'; // this is an alias for civicrm_activity_contact
       }
-      $where[] = "{$tableName}.{$fieldName} = %{$i}";
+      else {
+        continue;
+      }
 
-      $placeholders[$i] = array($value, $dataType);
-      $i++;
+      if (is_array($value) && array_key_exists('IN', $value)) {
+        $inValues = array_filter($value['IN'], function ($inValue) {
+          return $inValue !== NULL && $inValue !== '';
+        });
+        if (empty($inValues)) {
+          $where[] = '0 = 1';
+          continue;
+        }
+        $inPlaceholders = array();
+        foreach ($inValues as $inValue) {
+          $inPlaceholders[] = "%{$i}";
+          $placeholders[$i] = array($inValue, $dataType);
+          $i++;
+        }
+        $where[] = "{$tableName}.{$fieldName} IN (" . implode(', ', $inPlaceholders) . ")";
+      }
+      else {
+        $where[] = "{$tableName}.{$fieldName} = %{$i}";
+        $placeholders[$i] = array($value, $dataType);
+        $i++;
+      }
     }
 
     if (count($where)) {
@@ -153,8 +180,12 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
         assignee.contact_id AS assignee_contact_id,
         {$customSelect},
         civicrm_volunteer_need.start_time,
+        civicrm_volunteer_need.end_time,
+        civicrm_volunteer_need.duration AS need_duration,
         civicrm_volunteer_need.is_flexible,
         civicrm_volunteer_need.role_id,
+        civicrm_volunteer_need.project_id,
+        civicrm_volunteer_project.title AS project_title,
         assignee_contact.sort_name AS assignee_sort_name,
         assignee_contact.display_name AS assignee_display_name,
         assignee_phone.phone AS assignee_phone,
@@ -226,6 +257,78 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
     }
 
     return $rows;
+  }
+
+  /**
+   * Adds display-friendly fields for UI consumers (role label, shift time, beneficiaries).
+   *
+   * @param array $rows
+   */
+  public static function addDisplayData(array &$rows) {
+    if (empty($rows)) {
+      return;
+    }
+
+    $beneficiariesByProject = array();
+    foreach ($rows as &$row) {
+      if (!empty($row['is_flexible'])) {
+        $row['role_label'] = CRM_Volunteer_BAO_Need::getFlexibleRoleLabel();
+        $row['display_time'] = CRM_Volunteer_BAO_Need::getFlexibleDisplayTime();
+      }
+      else {
+        if (!empty($row['role_id'])) {
+          $role = CRM_Core_OptionGroup::getRowValues(
+            self::ROLE_OPTION_GROUP,
+            $row['role_id'],
+            'value'
+          );
+          $row['role_label'] = $role['label'] ?? NULL;
+        }
+        if (!empty($row['start_time'])) {
+          $row['display_time'] = CRM_Volunteer_BAO_Need::getTimes(
+            $row['start_time'],
+            $row['need_duration'] ?? NULL,
+            $row['end_time'] ?? NULL
+          );
+        }
+      }
+
+      $projectId = (int) ($row['project_id'] ?? 0);
+      if ($projectId && !array_key_exists($projectId, $beneficiariesByProject)) {
+        $beneficiariesByProject[$projectId] = self::getProjectBeneficiaries($projectId);
+      }
+      $row['beneficiaries'] = $beneficiariesByProject[$projectId] ?? array();
+    }
+  }
+
+  /**
+   * @param int $projectId
+   * @return array
+   *   List of arrays with id and display_name keys.
+   */
+  private static function getProjectBeneficiaries($projectId) {
+    $contactIds = CRM_Volunteer_BAO_Project::getContactsByRelationship(
+      $projectId,
+      'volunteer_beneficiary'
+    );
+    if (empty($contactIds)) {
+      return array();
+    }
+
+    $contacts = civicrm_api3('Contact', 'get', array(
+      'id' => array('IN' => $contactIds),
+      'return' => array('display_name'),
+      'options' => array('limit' => 0),
+    ));
+
+    $beneficiaries = array();
+    foreach ($contacts['values'] as $contact) {
+      $beneficiaries[] = array(
+        'id' => $contact['id'],
+        'display_name' => $contact['display_name'],
+      );
+    }
+    return $beneficiaries;
   }
 
   /**

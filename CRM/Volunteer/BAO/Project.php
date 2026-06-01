@@ -670,19 +670,16 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
   public static function getFlexibleNeedID ($project_id) {
     $result = NULL;
 
-    if (is_int($project_id) || ctype_digit((string) $project_id)) {
-      // Use get + limit 1: duplicate flexible rows (data issues) would make
-      // getvalue/getsingle fail with "Expected one VolunteerNeed but found N".
-      $flexibleNeed = civicrm_api3('VolunteerNeed', 'get', array(
+    if (is_int($project_id) || ctype_digit($project_id)) {
+      $flexibleNeed = civicrm_api('volunteer_need', 'getvalue', array(
         'is_active' => 1,
         'is_flexible' => 1,
         'project_id' => $project_id,
         'return' => 'id',
-        'limit' => 1,
+        'version' => 3,
       ));
-      if (!empty($flexibleNeed['values'])) {
-        $row = reset($flexibleNeed['values']);
-        $result = (int) $row['id'];
+      if (($flexibleNeed['is_error'] ?? NULL) !== 1) {
+        $result = (int) $flexibleNeed;
       }
     }
 
@@ -926,10 +923,12 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
           $roles[CRM_Volunteer_BAO_Need::FLEXIBLE_ROLE_ID] = CRM_Volunteer_BAO_Need::getFlexibleRoleLabel();
         } else {
           $role_id = $need['role_id'] ?? NULL;
-          $roles[$role_id] = CRM_Core_OptionGroup::getLabel(
+          $role = CRM_Core_OptionGroup::getRowValues(
             CRM_Volunteer_BAO_Assignment::ROLE_OPTION_GROUP,
-            $role_id
+            $role_id,
+            'value'
           );
+          $roles[$role_id] = $role['label'] ?? NULL;
         }
       }
       asort($roles);
@@ -957,6 +956,8 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
         if (
           // open needs must have a start time; this disqualifies flexible needs
           !empty($need['start_time'])
+          // open needs must not have all positions assigned
+          && ($need['quantity'] > $need['quantity_assigned'])
           // open needs must either:
           && (
             // 1) start after now,
@@ -967,10 +968,6 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
             || (empty($need['end_time']) && empty($need['duration']))
           )
         ) {
-          // Full shifts (all positions assigned) remain in the list so
-          // volunteers can see them, but are flagged so the UI can render
-          // them as unavailable and so signup can reject them.
-          $need['is_full'] = ($need['quantity'] <= $need['quantity_assigned']);
           $this->open_needs[$id] = $need;
         }
       }

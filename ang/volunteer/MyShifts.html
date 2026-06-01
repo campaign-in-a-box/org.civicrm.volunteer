@@ -2,7 +2,7 @@
 
   <div class="help">
     <p>
-      {{:: ts('Below are the volunteer shifts you have signed up for. You can edit the time you plan to spend, log hours you have already worked, or cancel a shift.') }}
+      {{:: ts('Below are the volunteer shifts you have signed up for. You can cancel a shift you no longer plan to work.') }}
     </p>
   </div>
 
@@ -12,53 +12,40 @@
     </button>
   </div>
 
-  <div ng-show="!contactId" class="messages status">
+  <div ng-show="loading" class="messages status">
+    <p>{{:: ts('Loading your shifts...') }}</p>
+  </div>
+
+  <div ng-show="!loading && !contactId" class="messages status">
     <p>{{:: ts('Please log in to view and manage your shifts.') }}</p>
   </div>
 
-  <div ng-show="contactId && !hasShifts()" class="messages status">
+  <div ng-show="!loading && contactId && !hasShifts()" class="messages status">
     <p>{{:: ts('You are not currently signed up for any volunteer shifts.') }}</p>
   </div>
 
-  <table ng-show="contactId && hasShifts()" class="crm-vol-my-shifts-table">
+  <table ng-show="!loading && contactId && hasShifts()" class="crm-vol-my-shifts-table">
     <thead>
       <tr>
         <th>{{:: ts('When') }}</th>
-        <th>{{:: ts('Role / Subject') }}</th>
-        <th>{{:: ts('Scheduled (mins)') }}</th>
-        <th>{{:: ts('Completed (mins)') }}</th>
-        <th>{{:: ts('Notes') }}</th>
+        <th>{{:: ts('Project') }}</th>
+        <th>{{:: ts('With') }}</th>
+        <th>{{:: ts('Role') }}</th>
         <th>{{:: ts('Actions') }}</th>
       </tr>
     </thead>
     <tbody>
       <tr ng-repeat="shift in shifts track by shift.id" class="crm-vol-my-shift-row">
-        <td>{{ formatDate(shift) }}</td>
-        <td>{{ shift.subject }}</td>
+        <td>{{ formatWhen(shift) }}</td>
+        <td>{{ shift.project_title }}</td>
         <td>
-          <span ng-hide="isEditing(shift)">{{ shift.time_scheduled_minutes }}</span>
-          <input ng-show="isEditing(shift)" type="number" min="0" ng-model="shift.time_scheduled_minutes" class="crm-form-text" />
+          <span class="beneficiary" ng-repeat="ben in shift.beneficiaries">{{ ben.display_name }}</span>
+          <span ng-if="!shift.beneficiaries.length">—</span>
         </td>
-        <td>
-          <span ng-hide="isEditing(shift)">{{ shift.time_completed_minutes }}</span>
-          <input ng-show="isEditing(shift)" type="number" min="0" ng-model="shift.time_completed_minutes" class="crm-form-text" />
-        </td>
-        <td>
-          <span ng-hide="isEditing(shift)" ng-bind-html="shift.details"></span>
-          <textarea ng-show="isEditing(shift)" ng-model="shift.details" class="crm-form-textarea"></textarea>
-        </td>
+        <td>{{ shift.role_label }}</td>
         <td class="crm-vol-my-shift-actions">
-          <button ng-hide="isEditing(shift)" type="button" class="button" ng-click="editShift(shift)">
-            {{:: ts('Edit') }}
-          </button>
-          <button ng-hide="isEditing(shift)" type="button" class="button crm-vol-my-shift-cancel" ng-click="cancelShift(shift)">
+          <button type="button" class="button crm-vol-my-shift-cancel" ng-click="cancelShift(shift)">
             {{:: ts('Cancel Shift') }}
-          </button>
-          <button ng-show="isEditing(shift)" type="button" class="button" ng-click="saveShift(shift)">
-            {{:: ts('Save') }}
-          </button>
-          <button ng-show="isEditing(shift)" type="button" class="button" ng-click="cancelEdit(shift)">
-            {{:: ts('Discard') }}
           </button>
         </td>
       </tr>

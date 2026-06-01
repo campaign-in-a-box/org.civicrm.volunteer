@@ -30,7 +30,7 @@
     });
   });
 
-  angular.module('volunteer').controller('VolOppsCtrl', function ($route, $scope, $window, $timeout, crmStatus, crmUiHelp, volOppSearch, countries, settings, supporting_data) {
+  angular.module('volunteer').controller('VolOppsCtrl', function ($route, $scope, $location, $window, $timeout, crmStatus, crmUiHelp, volOppSearch, countries, settings, supporting_data) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
     var hs = $scope.hs = crmUiHelp({file: 'ang/VolOppsCtrl'}); // See: templates/ang/VolOppsCtrl.hlp
@@ -158,6 +158,14 @@
       );
     };
 
+    $scope.goMyShifts = function ($event) {
+      if ($event) {
+        $event.preventDefault();
+        $event.stopPropagation();
+      }
+      $location.path('/volunteer/my-shifts');
+    };
+
     $scope.showProjectDescription = function (project) {
       var description = project.description;
       var addressBlock = '';
@@ -186,10 +194,6 @@
 
     $scope.showRoleDescription = function (need) {
       CRM.alert(need.role_description, need.role_label, 'info', {expires: 0});
-    };
-
-    $scope.slotsRemaining = function (need) {
-      return Math.max(0, (need.quantity || 0) - (need.quantity_assigned || 0));
     };
 
     $scope.toggleSelection = function (need) {

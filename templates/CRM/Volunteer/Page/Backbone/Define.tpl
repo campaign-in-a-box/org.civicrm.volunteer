@@ -68,7 +68,7 @@
       }) %>
     {/literal}
   </td>
-  <td><input type="text" class="crm-form-text" name="quantity" value="<%= quantity %>" size="4"></td>
+  <td><input type="number" class="crm-form-text" name="quantity" value="<%= quantity %>" min="0" step="1" size="4"></td>
   <td>
     <label>
     {ts domain='org.civicrm.volunteer'}Schedule Type:{/ts}
