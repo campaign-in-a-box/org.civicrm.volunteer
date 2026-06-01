@@ -181,6 +181,10 @@
       return need && $scope.hasTextContent(need.role_description);
     };
 
+    $scope.slotsRemaining = function (need) {
+      return Math.max(0, (need.quantity || 0) - (need.quantity_assigned || 0));
+    };
+
     $scope.showProjectDescription = function (project) {
       var description = project.description;
       var addressBlock = '';
@@ -225,7 +229,7 @@
       if (!volOppUseMobileRowTap()) {
         return;
       }
-      if ($($event.target).closest('span.icon, input, a, button, label').length) {
+      if ($($event.target).closest('span.icon, i.crm-vol-detail-icon, input, a, button, label').length) {
         return;
       }
       $scope.toggleSelection(need);
@@ -236,7 +240,7 @@
       if (!volOppUseMobileRowTap()) {
         return;
       }
-      if ($($event.target).closest('span.icon, a, button, label').length) {
+      if ($($event.target).closest('span.icon, i.crm-vol-detail-icon, a, button, label').length) {
         return;
       }
       $scope.toggleSelection(need);
