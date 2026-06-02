@@ -18,6 +18,11 @@
   float: right;
 }
 
+/* Contain search + cart floats so the results block sits below full width. */
+.crm-vol-opp-top {
+  overflow: hidden;
+}
+
 @media (max-width: 1000px) {
   .crm-vol-half-responsive {
     width: 100%;
@@ -29,6 +34,10 @@
   }
 
   /* Put search + opportunity list first; commitments / signup block last (mobile / narrow). */
+  .crm-vol-opp-top {
+    display: contents;
+  }
+
   .crm-container.crm-vol-opps-page {
     display: flex;
     flex-direction: column;
@@ -53,10 +62,6 @@
   .crm-container.crm-vol-opps-page > .crm-vol-opp-cart {
     order: 5;
     margin-top: 1.5em;
-  }
-
-  .crm-container.crm-vol-opps-page > .clear {
-    display: none;
   }
 
   /* Narrow floating cart: dock to bottom instead of a slim strip on the right. */
@@ -331,6 +336,9 @@ dialog.crm-vol-detail-alert::backdrop {
 }
 
 .crm-vol-opp-results {
+  clear: both;
+  width: 100%;
+  box-sizing: border-box;
   margin-top: 2em;
 }
 

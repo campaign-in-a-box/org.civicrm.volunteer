@@ -79,14 +79,21 @@
         var dest = 'list';
       }
 
-      var path = 'civicrm/volunteer/signup';
       var query = {
         reset: 1,
         needs: _.keys(volOppsInCart),
         dest: dest
       };
 
-      $window.location.href = CRM.url(path, query);
+      // WordPress frontend: CRM.url() from /civicrm/vol/ can resolve to /?civiwp=...
+      // at the site root (outside the CiviCRM base-page rewrite rules). Derive signup
+      // from the current pathname instead (e.g. /civicrm/vol/ -> /civicrm/volunteer/signup/).
+      var signupPath = $window.location.pathname.replace(/\/vol\/?$/, '/volunteer/signup/');
+      if (signupPath === $window.location.pathname) {
+        $window.location.href = CRM.url('civicrm/volunteer/signup', query);
+      } else {
+        $window.location.href = signupPath + '?' + CRM.$.param(query);
+      }
     };
 
     /**

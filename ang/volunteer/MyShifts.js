@@ -152,7 +152,6 @@
             $scope.shifts = _.filter($scope.shifts, function (s) {
               return s.id !== shift.id;
             });
-            $scope.$apply();
           })
         );
       });

@@ -19,6 +19,7 @@ Required vars: volOppData(), searchParams
       <button crm-icon="search" ng-click="showSearch()">{{:: ts('Filter this List of Volunteer Opportunities') }}</button>
     </div>
   </div>
+  <div class="crm-vol-opp-top">
   <div class="crm-vol-half-responsive crm-vol-opp-search" ng-hide="hideSearch">
     <h2>{{:: ts('Find Volunteer Opportunities') }}</h2>
     <form name="volOppSearchForm" crm-ui-id-scope>
@@ -184,8 +185,7 @@ Required vars: volOppData(), searchParams
       </div>
     </div>
   </div>
-
-  <div class="clear"></div>
+  </div>
 
   <!-- Results -->
   <div class="crm-vol-opp-results messages status no-popup" ng-show="_.size(volOppData()) === 0">
@@ -193,7 +193,6 @@ Required vars: volOppData(), searchParams
     {{:: ts('No results found. Please try different search criteria.') }}
   </div>
   <div class="crm-vol-opp-results" ng-show="_.size(volOppData()) > 0">
-    <h2>{{:: ts('Available Volunteer Opportunities') }}</h2>
     <p class="description">
       {{:: ts('For additional project or role detail, click the corresponding detail icon in the table below.') }}
       <i class="crm-i fa-comment crm-vol-detail-icon" role="img" aria-hidden="true"></i>
