@@ -36,7 +36,6 @@
     <div id="crm-vol-define-scheduled-needs-region">
       <div class="crm-loading-element">{ts domain='org.civicrm.volunteer'}Loading{/ts}...</div>
     </div>
-    <div id="crm-vol-define-flexible-needs-region"></div>
   </form>
 </script>
 
@@ -69,7 +68,7 @@
       }) %>
     {/literal}
   </td>
-  <td><input type="text" class="crm-form-text" name="quantity" value="<%= quantity %>" size="4"></td>
+  <td><input type="number" class="crm-form-text" name="quantity" value="<%= quantity %>" min="0" step="1" size="4"></td>
   <td>
     <label>
     {ts domain='org.civicrm.volunteer'}Schedule Type:{/ts}
@@ -122,8 +121,10 @@
 </script>
 
 <script type="text/template" id="crm-vol-define-flexible-need-tpl">
-  <input type="checkbox" name="visibility_id" id="crm-vol-visibility-id" value="<%= visibilityValue %>">
-  <label for="crm-vol-visibility-id">Allow users to sign up without specifying a shift.</label>
+  <td colspan="8">
+    <input type="checkbox" name="visibility_id" id="crm-vol-visibility-id" value="<%= visibilityValue %>">
+    <label for="crm-vol-visibility-id">Allow users to sign up without specifying a shift.</label>
+  </td>
 </script>
 
 <script type="text/template" id="crm-vol-define-add-row-tpl">
@@ -138,5 +139,75 @@
       </select>
     </td>
   </tr>
+</script>
+
+<script type="text/template" id="crm-vol-define-bulk-form-tpl">
+  <form class="crm-block crm-form-block crm-vol-define-bulk-form">
+    <p class="description">
+      {ts domain='org.civicrm.volunteer'}Generate a set of shifts by describing a simple repeating pattern. Each generated shift will appear in the list below, where you can individually modify or delete them.{/ts}
+    </p>
+    <table class="form-layout-compressed">
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-role">{ts domain='org.civicrm.volunteer'}Role{/ts}</label></td>
+        <td>
+          <select id="crm-vol-bulk-role" name="role_id" class="crm-form-select crm-select2 required">
+            {crmAPI var='bulkRoles' entity='VolunteerNeed' action='getoptions' field='role_id' sequential=0}
+            {foreach from=$bulkRoles.values item=roleLabel key=roleId}
+              <option value="{$roleId}">{$roleLabel}</option>
+            {/foreach}
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-shifts-per-day">{ts domain='org.civicrm.volunteer'}Shifts per day{/ts}</label></td>
+        <td><input type="number" id="crm-vol-bulk-shifts-per-day" name="shifts_per_day" class="crm-form-text required" value="1" min="1" size="4"></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-duration">{ts domain='org.civicrm.volunteer'}Duration (hours){/ts}</label></td>
+        <td>
+          <input type="number" id="crm-vol-bulk-duration" name="duration_hours" class="crm-form-text required" value="1" min="0" step="0.25" size="6">
+        </td>
+      </tr>
+      <tr class="crm-vol-define-bulk-hint-row">
+        <td class="label"></td>
+        <td><span class="crm-vol-define-bulk-hint">{ts domain='org.civicrm.volunteer'}Length of each shift.{/ts}</span></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-start-time">{ts domain='org.civicrm.volunteer'}Start time{/ts}</label></td>
+        <td>
+          <input type="text" id="crm-vol-bulk-start-time" name="start_time" class="crm-form-text required" size="10">
+        </td>
+      </tr>
+      <tr class="crm-vol-define-bulk-hint-row">
+        <td class="label"></td>
+        <td><span class="crm-vol-define-bulk-hint">{ts domain='org.civicrm.volunteer'}Start time for the first shift of each day.{/ts}</span></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-gap">{ts domain='org.civicrm.volunteer'}Gap between shifts (minutes){/ts}</label></td>
+        <td><input type="number" id="crm-vol-bulk-gap" name="gap_minutes" class="crm-form-text" value="0" min="0" size="4"></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-day-count">{ts domain='org.civicrm.volunteer'}Number of days{/ts}</label></td>
+        <td><input type="number" id="crm-vol-bulk-day-count" name="day_count" class="crm-form-text required" value="1" min="1" size="4"></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-start-date">{ts domain='org.civicrm.volunteer'}Start date{/ts}</label></td>
+        <td><input type="text" id="crm-vol-bulk-start-date" name="start_date" class="crm-form-text required" size="20"></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-quantity">{ts domain='org.civicrm.volunteer'}Volunteers needed per shift{/ts}</label></td>
+        <td><input type="number" id="crm-vol-bulk-quantity" name="quantity" class="crm-form-text required" value="1" min="1" size="4"></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-public">{ts domain='org.civicrm.volunteer'}Public?{/ts}</label></td>
+        <td><input type="checkbox" id="crm-vol-bulk-public" name="visibility_id" checked></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-active">{ts domain='org.civicrm.volunteer'}Enabled?{/ts}</label></td>
+        <td><input type="checkbox" id="crm-vol-bulk-active" name="is_active" checked></td>
+      </tr>
+    </table>
+    <div class="crm-vol-bulk-preview" style="margin-top: 1em;"></div>
+  </form>
 </script>
 {/strip}

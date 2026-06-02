@@ -70,12 +70,18 @@ class CRM_Volunteer_BAO_NeedSearch {
     foreach ($projects as $project) {
       $results = array();
 
-      $flexibleNeed = civicrm_api3('VolunteerNeed', 'getsingle', array(
-        'id' => $project->flexible_need_id,
-      ));
-      if ($flexibleNeed['visibility_id'] === CRM_Core_PseudoConstant::getKey('CRM_Volunteer_BAO_Need', 'visibility_id', 'public')) {
-        $needId = $flexibleNeed['id'];
-        $results[$needId] = $flexibleNeed;
+      $flexibleNeedId = $project->flexible_need_id;
+      // Without a concrete ID, APIv3 treats the filter as absent and getsingle
+      // matches every VolunteerNeed ("Expected one ... but found N").
+      if ($flexibleNeedId) {
+        $flexibleNeed = civicrm_api3('VolunteerNeed', 'getsingle', array(
+          'id' => $flexibleNeedId,
+        ));
+        if ($flexibleNeed['visibility_id'] === CRM_Core_PseudoConstant::getKey('CRM_Volunteer_BAO_Need', 'visibility_id', 'public')) {
+          $needId = $flexibleNeed['id'];
+          $flexibleNeed['quantity_assigned'] = CRM_Volunteer_BAO_Need::getAssignmentCount($needId);
+          $results[$needId] = $flexibleNeed;
+        }
       }
 
       $openNeeds = $project->open_needs;
@@ -93,8 +99,28 @@ class CRM_Volunteer_BAO_NeedSearch {
     }
 
     $this->getSearchResultsProjectData();
+    $this->annotateCurrentUserSignups();
     usort($this->searchResults, array($this, "usortDateAscending"));
     return $this->searchResults;
+  }
+
+  /**
+   * Flags needs the logged-in contact is already assigned to.
+   */
+  private function annotateCurrentUserSignups() {
+    $contactId = CRM_Core_Session::getLoggedInContactID();
+    if (!$contactId || empty($this->searchResults)) {
+      return;
+    }
+
+    $signedUpNeedIds = array_flip(CRM_Volunteer_BAO_Need::getSignedUpNeedIdsForContact(
+      $contactId,
+      array_keys($this->searchResults)
+    ));
+
+    foreach ($this->searchResults as &$need) {
+      $need['current_user_signed_up'] = isset($signedUpNeedIds[(int) $need['id']]);
+    }
   }
 
   /**

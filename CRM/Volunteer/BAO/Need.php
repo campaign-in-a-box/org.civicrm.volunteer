@@ -80,10 +80,10 @@ class CRM_Volunteer_BAO_Need extends CRM_Volunteer_DAO_Need {
     }
 
     // VOL-269: Do not allow creation of more than one flexible need per project.
-    if ($need->is_flexible) {
+    if (!empty($need->is_flexible)) {
       $existingNeedId = CRM_Volunteer_BAO_Project::getFlexibleNeedID($projectId);
-      $thisNeedId = property_exists($need, 'id') ? (int) $need->id : NULL;
-      if ($existingNeedId === $thisNeedId) {
+      $thisNeedId = CRM_Utils_Type::validate($need->id ?? NULL, 'Positive', FALSE) ? (int) $need->id : NULL;
+      if ($existingNeedId && $thisNeedId !== (int) $existingNeedId) {
         CRM_Core_Error::fatal('Cannot create more than one flexible need for a given project');
       }
     }
@@ -237,5 +237,33 @@ class CRM_Volunteer_BAO_Need extends CRM_Volunteer_DAO_Need {
     return civicrm_api3('VolunteerAssignment', 'getcount', array(
       'volunteer_need_id' => $need_id,
     ));
+  }
+
+  /**
+   * Returns need IDs from the given list where the contact has an active assignment.
+   *
+   * @param int $contactId
+   * @param array $needIds
+   * @return array
+   */
+  public static function getSignedUpNeedIdsForContact($contactId, array $needIds) {
+    CRM_Utils_Type::validate($contactId, 'Integer');
+    $needIds = array_filter(array_map('intval', $needIds));
+    if (empty($needIds)) {
+      return array();
+    }
+
+    $assignments = civicrm_api3('VolunteerAssignment', 'get', array(
+      'assignee_contact_id' => $contactId,
+      'volunteer_need_id' => array('IN' => $needIds),
+      'options' => array('limit' => 0),
+      'return' => array('volunteer_need_id'),
+    ));
+
+    $signedUpNeedIds = array();
+    foreach ($assignments['values'] as $assignment) {
+      $signedUpNeedIds[] = (int) $assignment['volunteer_need_id'];
+    }
+    return $signedUpNeedIds;
   }
 }

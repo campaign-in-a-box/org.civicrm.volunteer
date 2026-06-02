@@ -30,7 +30,7 @@
     });
   });
 
-  angular.module('volunteer').controller('VolOppsCtrl', function ($route, $scope, $window, $timeout, crmStatus, crmUiHelp, volOppSearch, countries, settings, supporting_data) {
+  angular.module('volunteer').controller('VolOppsCtrl', function ($route, $scope, $location, $window, $timeout, crmStatus, crmUiHelp, volOppSearch, countries, settings, supporting_data) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
     var hs = $scope.hs = crmUiHelp({file: 'ang/VolOppsCtrl'}); // See: templates/ang/VolOppsCtrl.hlp
@@ -38,6 +38,16 @@
     var volOppsInCart = {};
     $scope.shoppingCart = volOppsInCart;
     $scope.showCartContents = settings.volunteer_show_cart_contents;
+
+    /** Matches volunteer.css @media (max-width: 1000px); used when viewport crosses that breakpoint. */
+    function volOppUseBottomCommitmentsLayout() {
+      return $($window).width() <= 1000;
+    }
+
+    /** Matches volunteer.css @media (max-width: 768px) stacked opportunity / cart cards. */
+    function volOppUseMobileRowTap() {
+      return $($window).width() <= 768;
+    }
 
     // on page load, search based on the URL params
     volOppSearch.search();
@@ -69,14 +79,21 @@
         var dest = 'list';
       }
 
-      var path = 'civicrm/volunteer/signup';
       var query = {
         reset: 1,
         needs: _.keys(volOppsInCart),
         dest: dest
       };
 
-      $window.location.href = CRM.url(path, query);
+      // WordPress frontend: CRM.url() from /civicrm/vol/ can resolve to /?civiwp=...
+      // at the site root (outside the CiviCRM base-page rewrite rules). Derive signup
+      // from the current pathname instead (e.g. /civicrm/vol/ -> /civicrm/volunteer/signup/).
+      var signupPath = $window.location.pathname.replace(/\/vol\/?$/, '/volunteer/signup/');
+      if (signupPath === $window.location.pathname) {
+        $window.location.href = CRM.url('civicrm/volunteer/signup', query);
+      } else {
+        $window.location.href = signupPath + '?' + CRM.$.param(query);
+      }
     };
 
     /**
@@ -148,6 +165,70 @@
       );
     };
 
+    $scope.goMyShifts = function ($event) {
+      if ($event) {
+        $event.preventDefault();
+        $event.stopPropagation();
+      }
+      $location.path('/volunteer/my-shifts');
+    };
+
+    $scope.hasTextContent = function (html) {
+      if (!html) {
+        return false;
+      }
+      return String(html).replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim().length > 0;
+    };
+
+    $scope.hasProjectDescription = function (project) {
+      return project && $scope.hasTextContent(project.description);
+    };
+
+    $scope.hasRoleDescription = function (need) {
+      return need && $scope.hasTextContent(need.role_description);
+    };
+
+    $scope.slotsRemaining = function (need) {
+      return Math.max(0, (need.quantity || 0) - (need.quantity_assigned || 0));
+    };
+
+    $scope.showDetailAlert = function (title, html) {
+      var existing = document.querySelector('dialog.crm-vol-detail-alert');
+      if (existing) {
+        existing.remove();
+      }
+
+      var dialog = document.createElement('dialog');
+      dialog.className = 'crm-dialog crm-alert crm-vol-detail-alert';
+
+      if (title) {
+        var heading = document.createElement('h1');
+        heading.textContent = title;
+        dialog.appendChild(heading);
+      }
+
+      var content = document.createElement('div');
+      content.className = 'crm-vol-detail-alert-content';
+      content.innerHTML = html;
+      dialog.appendChild(content);
+
+      var buttons = document.createElement('div');
+      buttons.className = 'crm-buttons crm-flex-justify-end';
+      var ok = document.createElement('button');
+      ok.type = 'button';
+      ok.className = 'crm-button';
+      ok.textContent = ts('OK');
+      ok.addEventListener('click', function () {
+        dialog.close();
+        dialog.remove();
+      });
+      buttons.appendChild(ok);
+      dialog.appendChild(buttons);
+
+      document.body.appendChild(dialog);
+      dialog.showModal();
+    };
+
     $scope.showProjectDescription = function (project) {
       var description = project.description;
       var addressBlock = '';
@@ -171,34 +252,42 @@
       if (!_.isEmpty(addressBlock)) {
         addressBlock = '<p><strong>Location:</strong><br />' + addressBlock + '</p>';
       }
-      CRM.alert(description + campaignBlock + addressBlock, project.title, 'info', {expires: 0});
+      $scope.showDetailAlert(project.title, description + campaignBlock + addressBlock);
     };
 
     $scope.showRoleDescription = function (need) {
-      CRM.alert(need.role_description, need.role_label, 'info', {expires: 0});
+      $scope.showDetailAlert(need.role_label, need.role_description);
     };
 
     $scope.toggleSelection = function (need) {
       need.inCart = !need.hasOwnProperty('inCart') ? true : !need.inCart;
-
-      // if the need was just added to the cart...
-      var delay = 500;
-      var animSrc = (need.inCart) ? ".crm-vol-opp-need-" + need.id : ".crm-vol-opp-cart .ui-widget-content";
-      var animTarget = (need.inCart) ? ".crm-vol-opp-cart .ui-widget-content" : ".crm-vol-opp-need-" + need.id;
-
-      if ($scope.showCartContents) {
-        animSrc = (need.inCart) ? ".crm-vol-opp-need-" + need.id : ".crm-vol-opp-cart-need-" + need.id;
-        animTarget = (need.inCart) ? ".crm-vol-opp-cart-list tr:last" : ".crm-vol-opp-need-" + need.id;
-      }
-      $(animSrc).effect( "transfer", { className: 'crm-vol-opp-cart-transfer', to: $( animTarget ) }, delay);
-
-      $timeout(function() {
       if (need.inCart) {
         volOppsInCart[need.id] = need;
       } else {
         delete volOppsInCart[need.id];
       }
-      }, delay);
+    };
+
+    /** Mobile: tap anywhere on the opportunity card to sign up (toggle), except icons/checkbox. */
+    $scope.volOppOpportunityRowClick = function ($event, need) {
+      if (!volOppUseMobileRowTap()) {
+        return;
+      }
+      if ($($event.target).closest('span.icon, i.crm-vol-detail-icon, input, a, button, label').length) {
+        return;
+      }
+      $scope.toggleSelection(need);
+    };
+
+    /** Mobile: tap anywhere on a selected commitment row to remove, except icons/trash control. */
+    $scope.volOppCartRowClick = function ($event, need) {
+      if (!volOppUseMobileRowTap()) {
+        return;
+      }
+      if ($($event.target).closest('span.icon, i.crm-vol-detail-icon, a, button, label').length) {
+        return;
+      }
+      $scope.toggleSelection(need);
     };
 
     $scope.toggleCartList = function () {
@@ -218,18 +307,67 @@
     $scope.cartIsFloating = false;
 
     if (settings.volunteer_floating_cart_enabled) {
-      var cartDelay = 200;
+      /** Y-position (document) where the cart sits in-flow; used to decide when to float. */
+      var cartTop = 0;
+      var lastVolOppNarrowLayout = volOppUseBottomCommitmentsLayout();
 
-      var cartTop = $("div.crm-vol-opp-cart").offset().top;
-      $(window).on("scroll", function (e) {
+      /**
+       * Re-read the cart's in-flow position. Must not run while `.floating_cart` is active:
+       * `position:fixed` makes `.offset().top` useless and breaks scroll behavior.
+       */
+      function refreshCartScrollAnchor() {
+        if ($scope.cartIsFloating) {
+          return;
+        }
+        var $cart = $("div.crm-vol-opp-cart");
+        if (!$cart.length) {
+          return;
+        }
+        var o = $cart.offset();
+        if (o) {
+          cartTop = o.top;
+        }
+      }
+
+      function onVolOppCartScroll() {
         var cartShouldFloat = ($(window).scrollTop() > cartTop);
         if ($scope.cartIsFloating !== cartShouldFloat) {
-          $(".crm-vol-opp-cart").fadeOut(cartDelay);
           $timeout(function () {
             $scope.cartIsFloating = cartShouldFloat;
-            $(".crm-vol-opp-cart").fadeIn(cartDelay);
-          }, cartDelay);
+            if (!cartShouldFloat) {
+              $timeout(refreshCartScrollAnchor, 0);
+            }
+          });
         }
+      }
+
+      function onVolOppCartResize() {
+        var narrowNow = volOppUseBottomCommitmentsLayout();
+        if (narrowNow !== lastVolOppNarrowLayout) {
+          lastVolOppNarrowLayout = narrowNow;
+          $timeout(function () {
+            $scope.cartIsFloating = false;
+            refreshCartScrollAnchor();
+          });
+          return;
+        }
+        refreshCartScrollAnchor();
+      }
+
+      refreshCartScrollAnchor();
+      $timeout(refreshCartScrollAnchor, 0);
+
+      $scope.$watch(function () {
+        return _.size($scope.volOppData());
+      }, function () {
+        $timeout(refreshCartScrollAnchor, 0);
+      });
+
+      $(window).on("scroll", onVolOppCartScroll);
+      $(window).on("resize", onVolOppCartResize);
+      $scope.$on("$destroy", function () {
+        $(window).off("scroll", onVolOppCartScroll);
+        $(window).off("resize", onVolOppCartResize);
       });
     }
   });

@@ -923,10 +923,12 @@ class CRM_Volunteer_BAO_Project extends CRM_Volunteer_DAO_Project {
           $roles[CRM_Volunteer_BAO_Need::FLEXIBLE_ROLE_ID] = CRM_Volunteer_BAO_Need::getFlexibleRoleLabel();
         } else {
           $role_id = $need['role_id'] ?? NULL;
-          $roles[$role_id] = CRM_Core_OptionGroup::getLabel(
+          $role = CRM_Core_OptionGroup::getRowValues(
             CRM_Volunteer_BAO_Assignment::ROLE_OPTION_GROUP,
-            $role_id
+            $role_id,
+            'value'
           );
+          $roles[$role_id] = $role['label'] ?? NULL;
         }
       }
       asort($roles);

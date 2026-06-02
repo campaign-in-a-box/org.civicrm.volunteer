@@ -39,17 +39,21 @@
       <div class="crm-grid-cell">{ts domain='org.civicrm.volunteer'}Start Date{/ts}</div>
       <div class="crm-grid-cell">{ts domain='org.civicrm.volunteer'}Scheduled Duration <br/> (in minutes){/ts}</div>
       <div class="crm-grid-cell">
-        <img src="{$config->resourceBase}i/copy.png"
-             alt="{ts domain='org.civicrm.volunteer'}Click to copy Actual Duration from row one to all rows.{/ts}"
-             fname="actual_duration" class="action-icon"
-             title="{ts domain='org.civicrm.volunteer'}Click here to copy the Actual Duration value in row one to ALL rows.{/ts}" />
-        {ts}Actual Duration <br/> (in minutes){/ts}
+        <span class="action-icon" fname="actual_duration" role="button"
+              title="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}Click to copy Actual Duration from row one to all rows.{/ts}"
+              aria-label="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}Click to copy Actual Duration from row one to all rows.{/ts}">
+          <i class="crm-i fa-clone" role="img" aria-hidden="true"></i>
+        </span>
+        {ts domain='org.civicrm.volunteer'}Actual Duration <br/> (in minutes){/ts}
         <span class="crm-marker" title="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}This field is required.{/ts}">*</span>
       </div>
-      <div class="crm-grid-cell"><img src="{$config->resourceBase}i/copy.png"
-                                      alt="{ts domain='org.civicrm.volunteer'}Click to copy Volunteer Status from row one to all rows.{/ts}"
-                                      fname="volunteer_status" class="action-icon"
-                                      title="{ts domain='org.civicrm.volunteer'}Click here to copy the Volunteer Status value in row one to ALL rows.{/ts}"/>{ts}Status{/ts}
+      <div class="crm-grid-cell">
+        <span class="action-icon" fname="volunteer_status" role="button"
+              title="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}Click to copy Volunteer Status from row one to all rows.{/ts}"
+              aria-label="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}Click to copy Volunteer Status from row one to all rows.{/ts}">
+          <i class="crm-i fa-clone" role="img" aria-hidden="true"></i>
+        </span>
+        {ts domain='org.civicrm.volunteer'}Status{/ts}
       </div>
       <div class="crm-grid-cell"></div>
     </div>

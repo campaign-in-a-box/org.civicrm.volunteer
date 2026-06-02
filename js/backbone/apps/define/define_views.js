@@ -7,8 +7,7 @@
     Define.layout = Marionette.Layout.extend({
       template: "#crm-vol-define-layout-tpl",
       regions: {
-        scheduledNeeds: "#crm-vol-define-scheduled-needs-region",
-        flexibleNeeds: "#crm-vol-define-flexible-needs-region"
+        scheduledNeeds: "#crm-vol-define-scheduled-needs-region"
       }
     });
 
@@ -195,6 +194,17 @@
           case 'is_active':
             value = e.currentTarget.checked ? e.currentTarget.value : 0;
             break;
+          case 'quantity':
+            if (value === '' || value === null) {
+              value = null;
+            }
+            else {
+              value = parseInt(value, 10);
+              if (isNaN(value) || value < 0) {
+                value = null;
+              }
+            }
+            break;
         }
 
         // update only if a change occurred
@@ -267,9 +277,12 @@
       tagName: 'tr'
     }));
 
-    Define.flexibleNeedItemView = Marionette.ItemView.extend(_.extend(itemViewSettings, {
+    Define.flexibleNeedItemView = Marionette.ItemView.extend(_.extend({}, itemViewSettings, {
       template: '#crm-vol-define-flexible-need-tpl',
-      tagName: 'div'
+      tagName: 'tr',
+      attributes: function() {
+        return { class: 'crm-vol-define-flexible-need-row' };
+      }
     }));
 
     Define.needsCompositeView = Marionette.CompositeView.extend({
@@ -277,6 +290,10 @@
       template: "#crm-vol-define-table-tpl",
       itemView: Define.scheduledNeedItemView,
       itemViewContainer: '#crm-vol-define-needs-table > tbody',
+
+      initialize: function(options) {
+        this.flexibleModel = options.flexibleModel;
+      },
 
       events: {
         'change #crm-vol-define-add-need': 'addNewNeed'
@@ -308,9 +325,209 @@
       },
 
       onRender: function() {
-        this.$('#crm-vol-define-needs-table > tbody').append($('#crm-vol-define-add-row-tpl').html());
-        this.$('#crm-vol-define-add-need').crmSelect2();
+        if (!this.$('#crm-vol-define-add-row').length) {
+          this.$('#crm-vol-define-needs-table > tbody').append($('#crm-vol-define-add-row-tpl').html());
+          this.$('#crm-vol-define-add-need').crmSelect2();
+        }
+        if (this.flexibleModel) {
+          if (this.flexibleItemView) {
+            this.flexibleItemView.close();
+            this.flexibleItemView = null;
+          }
+          this.flexibleItemView = new Define.flexibleNeedItemView({
+            model: this.flexibleModel
+          });
+          this.flexibleItemView.render();
+          this.$('#crm-vol-define-add-row').before(this.flexibleItemView.el);
+        }
+      },
+
+      onClose: function() {
+        if (this.flexibleItemView) {
+          this.flexibleItemView.close();
+          this.flexibleItemView = null;
+        }
       }
     });
+
+    /**
+     * Shows a modal form for creating many shifts from a simple repeating
+     * pattern. When the form is submitted, VolunteerNeed.createbulk runs on
+     * the server and the just-created shifts are appended to the existing
+     * needs list, where each one can be individually modified or deleted.
+     */
+    Define.showBulkCreateDialog = function(collection) {
+      var $form = $('<div class="crm-vol-define-bulk-dialog"></div>')
+        .html($('#crm-vol-define-bulk-form-tpl').html());
+
+      // Default start date = today; default start time = 09:00.
+      var today = new Date();
+      $form.find('[name=start_date]').addClass('dateplugin').datepicker().datepicker('setDate', today);
+      $form.find('[name=start_time]').addClass('timeplugin').timeEntry({
+        show24Hours: CRM.config.timeInputFormat == 2
+      }).timeEntry('setTime', '09:00:00');
+      $form.find('select.crm-select2').crmSelect2();
+
+      var renderPreview = function() {
+        var parsed = parseBulkForm($form);
+        var $preview = $form.find('.crm-vol-bulk-preview').empty();
+        if (!parsed.ok) {
+          $preview.append($('<div class="status messages">').text(parsed.error));
+          return;
+        }
+        var total = parsed.params.shifts_per_day * parsed.params.day_count;
+        $preview.append($('<div class="status messages">').text(
+          ts('%1 shifts will be created (%2 per day x %3 days, %4 minutes each, starting %5 at %6).', {
+            1: total,
+            2: parsed.params.shifts_per_day,
+            3: parsed.params.day_count,
+            4: parsed.params.duration,
+            5: parsed.params.start_date,
+            6: parsed.params.start_time
+          })
+        ));
+      };
+
+      $form.on('change blur input', ':input', renderPreview);
+      setTimeout(renderPreview, 0);
+
+      var dialog = CRM.confirm({
+        title: ts('Add shifts in bulk'),
+        message: $form,
+        options: {
+          no: ts('Cancel'),
+          yes: ts('Create shifts')
+        },
+        width: '600px'
+      });
+
+      dialog.on('crmConfirm:yes', function() {
+        var parsed = parseBulkForm($form);
+        if (!parsed.ok) {
+          CRM.alert(parsed.error, ts('Invalid input'), 'error');
+          return false;
+        }
+
+        var $tableBlockTarget = $('#crm-vol-define-needs-table');
+        $tableBlockTarget.block();
+
+        CRM.api3('VolunteerNeed', 'createbulk', parsed.params, true)
+          .done(function(result) {
+            $tableBlockTarget.unblock();
+            if (result.is_error) {
+              return;
+            }
+            var createdIds = _.keys(result.values || {});
+            if (!createdIds.length) {
+              return;
+            }
+            // Reload the needs list so new shifts show up with proper
+            // formatted dates/times and the usual per-row edit controls.
+            volunteerApp.Entities.getNeeds({'api.volunteer_assignment.getcount': {}})
+              .done(function(arrData) {
+                var scheduled = volunteerApp.Entities.Needs.getScheduled(arrData);
+                collection.reset(scheduled.models);
+                _.each(createdIds, function(id) {
+                  Define.registerNeedChange('created', parseInt(id, 10));
+                });
+                CRM.alert(
+                  ts('%1 shifts have been created. You can now modify or delete each one individually.', {1: createdIds.length}),
+                  '',
+                  'success'
+                );
+              });
+          })
+          .fail(function() {
+            $tableBlockTarget.unblock();
+          });
+      });
+    };
+
+    /**
+     * Places "Add shifts in bulk" inside .ui-dialog-buttonset, before Done.
+     */
+    Define.attachBulkButtonToDialog = function() {
+      var $pane = CRM.$('#crm-volunteer-dialog').closest('.ui-dialog').find('.ui-dialog-buttonpane').first();
+      var $buttonset = $pane.find('.ui-dialog-buttonset').first();
+      if (!$pane.length || !$buttonset.length || !Define.collectionView || !Define.collectionView.collection) {
+        return;
+      }
+      $pane.find('.crm-vol-define-bulk-footer-wrap').remove();
+      var $wrap = CRM.$('<div class="crm-vol-define-bulk-footer-wrap"></div>');
+      var $btn = CRM.$('<a href="#" id="crm-vol-define-add-bulk" class="button crm-hover-button"></a>');
+      $btn.html('<span><div class="icon ui-icon-calendar"></div>' + ts('Add shifts in bulk') + '</span>');
+      $wrap.append($btn);
+      $buttonset.prepend($wrap);
+      $btn.on('click', function(e) {
+        e.preventDefault();
+        Define.showBulkCreateDialog(Define.collectionView.collection);
+      });
+    };
+
+    Define.detachBulkButtonFromDialog = function() {
+      CRM.$('#crm-volunteer-dialog').closest('.ui-dialog').find('.crm-vol-define-bulk-footer-wrap').remove();
+    };
+
+    /**
+     * Reads values from the bulk creation form and validates them.
+     * Returns {ok: true, params: {...}} on success, or
+     * {ok: false, error: '...'} on failure.
+     */
+    function parseBulkForm($form) {
+      var roleId = $form.find('[name=role_id]').val();
+      var shiftsPerDay = parseInt($form.find('[name=shifts_per_day]').val(), 10);
+      var durationHours = parseFloat($form.find('[name=duration_hours]').val());
+      var gapMinutes = parseInt($form.find('[name=gap_minutes]').val(), 10) || 0;
+      var dayCount = parseInt($form.find('[name=day_count]').val(), 10);
+      var quantity = parseInt($form.find('[name=quantity]').val(), 10);
+      var isPublic = $form.find('[name=visibility_id]').is(':checked');
+      var isActive = $form.find('[name=is_active]').is(':checked');
+
+      var startDateObj = $form.find('[name=start_date]').datepicker('getDate');
+      var startTimeObj = $form.find('[name=start_time]').timeEntry('getTime');
+
+      if (!roleId) {
+        return {ok: false, error: ts('Please select a role.')};
+      }
+      if (!shiftsPerDay || shiftsPerDay < 1) {
+        return {ok: false, error: ts('Shifts per day must be at least 1.')};
+      }
+      if (!dayCount || dayCount < 1) {
+        return {ok: false, error: ts('Number of days must be at least 1.')};
+      }
+      if (!(durationHours > 0)) {
+        return {ok: false, error: ts('Duration must be greater than zero.')};
+      }
+      if (!startDateObj) {
+        return {ok: false, error: ts('Please choose a start date.')};
+      }
+      if (!startTimeObj) {
+        return {ok: false, error: ts('Please choose a start time.')};
+      }
+
+      function pad(n) { n = String(n); return n.length === 1 ? '0' + n : n; }
+      var startDate = startDateObj.getFullYear() + '-'
+        + pad(startDateObj.getMonth() + 1) + '-'
+        + pad(startDateObj.getDate());
+      var startTime = startTimeObj.toTimeString().split(' ')[0];
+      var duration = Math.round(durationHours * 60);
+
+      var params = {
+        project_id: volunteerApp.project_id,
+        role_id: roleId,
+        shifts_per_day: shiftsPerDay,
+        day_count: dayCount,
+        duration: duration,
+        gap_minutes: gapMinutes,
+        start_date: startDate,
+        start_time: startTime,
+        quantity: quantity || 1,
+        is_active: isActive ? 1 : 0,
+        visibility_id: isPublic
+          ? CRM.pseudoConstant.volunteer_need_visibility.public
+          : CRM.pseudoConstant.volunteer_need_visibility.admin
+      };
+      return {ok: true, params: params};
+    }
   });
 }(CRM.ts('org.civicrm.volunteer')));

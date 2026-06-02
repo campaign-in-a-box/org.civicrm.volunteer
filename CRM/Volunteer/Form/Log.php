@@ -134,7 +134,7 @@ class CRM_Volunteer_Form_Log extends CRM_Core_Form {
       $extra = array();
       $entityRefParams = array(
         'create' => TRUE,
-        'class' => 'big required',
+        'class' => 'big',
         'placeholder' => ts('- select -', array('domain' => 'org.civicrm.volunteer')),
       );
       $isRequired = FALSE;
@@ -160,8 +160,7 @@ class CRM_Volunteer_Form_Log extends CRM_Core_Form {
       $this->add('datepicker', "field[$rowNumber][start_date]", '', $datePickerAttr);
       $this->add('select', "field[$rowNumber][volunteer_status]", '', $volunteerStatus);
       $this->add('text', "field[$rowNumber][scheduled_duration]", '', array_merge($attributes, $extra));
-      $durationAttr = array_merge($attributes, array('class' => 'required'));
-      $this->add('text', "field[$rowNumber][actual_duration]", '', $durationAttr);
+      $this->add('text', "field[$rowNumber][actual_duration]", '', $attributes);
       $this->add('text', "field[$rowNumber][activity_id]");
     }
 
@@ -198,12 +197,13 @@ class CRM_Volunteer_Form_Log extends CRM_Core_Form {
 
     $rows = self::getCompletedRows($params['field']);
     foreach ($rows as $key => $value) {
-      $duration = $value['actual_duration'];
+      $duration = $value['actual_duration'] ?? '';
 
-      if (!$duration) {
+      if ($duration === '' || $duration === NULL) {
         $errors["field[$key][actual_duration]"] =
           ts('Please enter the actual duration volunteered.', array('domain' => 'org.civicrm.volunteer'));
-      } elseif (!ctype_digit($duration)) {
+      }
+      elseif (!ctype_digit((string) $duration)) {
         $errors["field[$key][actual_duration]"] =
           ts('Please enter duration as a number.', array('domain' => 'org.civicrm.volunteer'));
       }
@@ -211,7 +211,9 @@ class CRM_Volunteer_Form_Log extends CRM_Core_Form {
 
     if (!empty($errors)) {
       // show as many rows as there are data for; prevents invalid "Add Volunteer" rows from being hidden
-      CRM_Core_Smarty::singleton()->assign('showVolunteerRow', count($rows));
+      $smarty = CRM_Core_Smarty::singleton();
+      $showVolunteerRow = max(count($rows), (int) $smarty->getTemplateVars('showVolunteerRow'));
+      $smarty->assign('showVolunteerRow', $showVolunteerRow);
 
       return $errors;
     }
@@ -298,13 +300,25 @@ class CRM_Volunteer_Form_Log extends CRM_Core_Form {
       $count++;
     }
 
-    $statusMsg = ts('Volunteer hours have been logged.', array('domain' => 'org.civicrm.volunteer'));
-    CRM_Core_Session::setStatus($statusMsg, ts('Saved', array('domain' => 'org.civicrm.volunteer')), 'success');
+    if ($count) {
+      $statusMsg = ts('Volunteer hours have been logged.', array('domain' => 'org.civicrm.volunteer'));
+      CRM_Core_Session::setStatus($statusMsg, ts('Saved', array('domain' => 'org.civicrm.volunteer')), 'success');
+    }
+    else {
+      CRM_Core_Session::setStatus(
+        ts('No volunteer hours were entered.', array('domain' => 'org.civicrm.volunteer')),
+        ts('Nothing to save', array('domain' => 'org.civicrm.volunteer')),
+        'info'
+      );
+    }
 
   }
 
   /**
-   * Gets completed rows (i.e., those with a contact ID)
+   * Gets rows that should be validated or saved.
+   *
+   * Existing assignments are included only when actual duration was entered.
+   * New rows added via "Add Volunteer" are included when a contact was selected.
    *
    * @param array $rows Rows submitted to the form
    * @return array
@@ -313,9 +327,20 @@ class CRM_Volunteer_Form_Log extends CRM_Core_Form {
     $completedRows = array();
 
     foreach ($rows as $key => $row) {
-      if (!empty($row['contact_id'])) {
-        $completedRows[$key] = $row;
+      if (empty($row['contact_id'])) {
+        continue;
       }
+
+      // Existing assignment: only process rows where hours were entered.
+      if (!empty($row['activity_id'])) {
+        if (($row['actual_duration'] ?? '') !== '') {
+          $completedRows[$key] = $row;
+        }
+        continue;
+      }
+
+      // New row added via "Add Volunteer".
+      $completedRows[$key] = $row;
     }
     return $completedRows;
   }
