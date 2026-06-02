@@ -159,18 +159,8 @@
         </td>
       </tr>
       <tr>
-        <td class="label"><label for="crm-vol-bulk-shifts-per-day">{ts domain='org.civicrm.volunteer'}Shifts per day{/ts}</label></td>
-        <td><input type="number" id="crm-vol-bulk-shifts-per-day" name="shifts_per_day" class="crm-form-text required" value="1" min="1" size="4"></td>
-      </tr>
-      <tr>
-        <td class="label"><label for="crm-vol-bulk-duration">{ts domain='org.civicrm.volunteer'}Duration (hours){/ts}</label></td>
-        <td>
-          <input type="number" id="crm-vol-bulk-duration" name="duration_hours" class="crm-form-text required" value="1" min="0" step="0.25" size="6">
-        </td>
-      </tr>
-      <tr class="crm-vol-define-bulk-hint-row">
-        <td class="label"></td>
-        <td><span class="crm-vol-define-bulk-hint">{ts domain='org.civicrm.volunteer'}Length of each shift.{/ts}</span></td>
+        <td class="label"><label for="crm-vol-bulk-start-date">{ts domain='org.civicrm.volunteer'}Start date{/ts}</label></td>
+        <td><input type="text" id="crm-vol-bulk-start-date" name="start_date" class="crm-form-text required" size="20"></td>
       </tr>
       <tr>
         <td class="label"><label for="crm-vol-bulk-start-time">{ts domain='org.civicrm.volunteer'}Start time{/ts}</label></td>
@@ -183,16 +173,26 @@
         <td><span class="crm-vol-define-bulk-hint">{ts domain='org.civicrm.volunteer'}Start time for the first shift of each day.{/ts}</span></td>
       </tr>
       <tr>
-        <td class="label"><label for="crm-vol-bulk-gap">{ts domain='org.civicrm.volunteer'}Gap between shifts (minutes){/ts}</label></td>
-        <td><input type="number" id="crm-vol-bulk-gap" name="gap_minutes" class="crm-form-text" value="0" min="0" size="4"></td>
-      </tr>
-      <tr>
         <td class="label"><label for="crm-vol-bulk-day-count">{ts domain='org.civicrm.volunteer'}Number of days{/ts}</label></td>
         <td><input type="number" id="crm-vol-bulk-day-count" name="day_count" class="crm-form-text required" value="1" min="1" size="4"></td>
       </tr>
       <tr>
-        <td class="label"><label for="crm-vol-bulk-start-date">{ts domain='org.civicrm.volunteer'}Start date{/ts}</label></td>
-        <td><input type="text" id="crm-vol-bulk-start-date" name="start_date" class="crm-form-text required" size="20"></td>
+        <td class="label"><label for="crm-vol-bulk-duration">{ts domain='org.civicrm.volunteer'}Duration (hours){/ts}</label></td>
+        <td>
+          <input type="number" id="crm-vol-bulk-duration" name="duration_hours" class="crm-form-text required" value="1" min="0" step="0.25" size="6">
+        </td>
+      </tr>
+      <tr class="crm-vol-define-bulk-hint-row">
+        <td class="label"></td>
+        <td><span class="crm-vol-define-bulk-hint">{ts domain='org.civicrm.volunteer'}Length of each shift.{/ts}</span></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-shifts-per-day">{ts domain='org.civicrm.volunteer'}Shifts per day{/ts}</label></td>
+        <td><input type="number" id="crm-vol-bulk-shifts-per-day" name="shifts_per_day" class="crm-form-text required" value="1" min="1" size="4"></td>
+      </tr>
+      <tr>
+        <td class="label"><label for="crm-vol-bulk-gap">{ts domain='org.civicrm.volunteer'}Gap between shifts (minutes){/ts}</label></td>
+        <td><input type="number" id="crm-vol-bulk-gap" name="gap_minutes" class="crm-form-text" value="0" min="0" size="4"></td>
       </tr>
       <tr>
         <td class="label"><label for="crm-vol-bulk-quantity">{ts domain='org.civicrm.volunteer'}Volunteers needed per shift{/ts}</label></td>
