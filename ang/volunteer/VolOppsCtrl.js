@@ -330,7 +330,7 @@
       }
 
       function onVolOppCartScroll() {
-        var cartShouldFloat = ($(window).scrollTop() > cartTop);
+        var cartShouldFloat = !volOppUseBottomCommitmentsLayout() && ($(window).scrollTop() > cartTop);
         if ($scope.cartIsFloating !== cartShouldFloat) {
           $timeout(function () {
             $scope.cartIsFloating = cartShouldFloat;
