@@ -375,17 +375,23 @@
           $preview.append($('<div class="status messages">').text(parsed.error));
           return;
         }
-        var total = parsed.params.shifts_per_day * parsed.params.day_count;
-        $preview.append($('<div class="status messages">').text(
-          ts('%1 shifts will be created (%2 per day x %3 days, %4 minutes each, starting %5 at %6).', {
-            1: total,
-            2: parsed.params.shifts_per_day,
-            3: parsed.params.day_count,
-            4: parsed.params.duration,
-            5: parsed.params.start_date,
-            6: parsed.params.start_time
-          })
-        ));
+        var unitLabels = {minute: ts('minutes'), hour: ts('hours'), day: ts('days'), week: ts('weeks')};
+        var unitLabel = unitLabels[parsed.params.interval_unit] || parsed.params.interval_unit;
+        var msg = parsed.params.count === 1
+          ? ts('1 shift will be created (%1 minutes long, starting %2 at %3).', {
+              1: parsed.params.duration,
+              2: parsed.params.start_date,
+              3: parsed.params.start_time
+            })
+          : ts('%1 shifts will be created (%2 minutes each, every %3 %4, starting %5 at %6).', {
+              1: parsed.params.count,
+              2: parsed.params.duration,
+              3: parsed.params.interval,
+              4: unitLabel,
+              5: parsed.params.start_date,
+              6: parsed.params.start_time
+            });
+        $preview.append($('<div class="status messages">').text(msg));
       };
 
       $form.on('change blur input', ':input', renderPreview);
@@ -475,10 +481,10 @@
      */
     function parseBulkForm($form) {
       var roleId = $form.find('[name=role_id]').val();
-      var shiftsPerDay = parseInt($form.find('[name=shifts_per_day]').val(), 10);
       var durationHours = parseFloat($form.find('[name=duration_hours]').val());
-      var gapMinutes = parseInt($form.find('[name=gap_minutes]').val(), 10) || 0;
-      var dayCount = parseInt($form.find('[name=day_count]').val(), 10);
+      var count = parseInt($form.find('[name=count]').val(), 10);
+      var interval = parseInt($form.find('[name=interval]').val(), 10) || 0;
+      var intervalUnit = $form.find('[name=interval_unit]').val() || 'minute';
       var quantity = parseInt($form.find('[name=quantity]').val(), 10);
       var isPublic = $form.find('[name=visibility_id]').is(':checked');
       var isActive = $form.find('[name=is_active]').is(':checked');
@@ -489,11 +495,11 @@
       if (!roleId) {
         return {ok: false, error: ts('Please select a role.')};
       }
-      if (!shiftsPerDay || shiftsPerDay < 1) {
-        return {ok: false, error: ts('Shifts per day must be at least 1.')};
+      if (!count || count < 1) {
+        return {ok: false, error: ts('Number of shifts must be at least 1.')};
       }
-      if (!dayCount || dayCount < 1) {
-        return {ok: false, error: ts('Number of days must be at least 1.')};
+      if (count > 1 && interval < 1) {
+        return {ok: false, error: ts('Repeat interval must be at least 1 when creating multiple shifts.')};
       }
       if (!(durationHours > 0)) {
         return {ok: false, error: ts('Duration must be greater than zero.')};
@@ -515,10 +521,10 @@
       var params = {
         project_id: volunteerApp.project_id,
         role_id: roleId,
-        shifts_per_day: shiftsPerDay,
-        day_count: dayCount,
+        count: count,
+        interval: interval,
+        interval_unit: intervalUnit,
         duration: duration,
-        gap_minutes: gapMinutes,
         start_date: startDate,
         start_time: startTime,
         quantity: quantity || 1,
