@@ -100,6 +100,13 @@ class CRM_Volunteer_DAO_Need extends CRM_Core_DAO {
   public $is_active;
 
   /**
+   * Staff notes for this opportunity, shown to volunteers when signing up.
+   *
+   * @var string
+   */
+  public $notes;
+
+  /**
    * @var timestamp
    */
   public $created;
@@ -286,6 +293,18 @@ class CRM_Volunteer_DAO_Need extends CRM_Core_DAO {
           'bao' => 'CRM_Volunteer_DAO_Need',
           'localizable' => 0,
           'add' => '4.4',
+        ],
+        'notes' => [
+          'name' => 'notes',
+          'type' => CRM_Utils_Type::T_TEXT,
+          'title' => E::ts('Notes'),
+          'description' => E::ts('Staff notes for this opportunity, shown to volunteers when signing up.'),
+          'where' => 'civicrm_volunteer_need.notes',
+          'table_name' => 'civicrm_volunteer_need',
+          'entity' => 'Need',
+          'bao' => 'CRM_Volunteer_DAO_Need',
+          'localizable' => 0,
+          'add' => '2.4.7',
         ],
         'created' => [
           'name' => 'created',

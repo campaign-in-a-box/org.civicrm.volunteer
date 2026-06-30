@@ -184,6 +184,7 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
         civicrm_volunteer_need.duration AS need_duration,
         civicrm_volunteer_need.is_flexible,
         civicrm_volunteer_need.role_id,
+        civicrm_volunteer_need.notes,
         civicrm_volunteer_need.project_id,
         civicrm_volunteer_project.title AS project_title,
         assignee_contact.sort_name AS assignee_sort_name,

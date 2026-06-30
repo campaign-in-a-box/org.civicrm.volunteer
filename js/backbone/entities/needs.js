@@ -14,6 +14,7 @@ CRM.volunteerApp.module('Entities', function(Entities, volunteerApp, Backbone, M
       'start_time': CRM.volunteer.default_date,
       'end_time': null,
       'quantity': null,
+      'notes': '',
       'filled': null,
       'userAdded': false, // see this.createNewNeed() and initializeTimeComponents() in the view
       'visibility_id': CRM.pseudoConstant.volunteer_need_visibility.public

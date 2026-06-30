@@ -261,3 +261,24 @@
 .crm-vol-define-bulk-form tr:has(+ tr.crm-vol-define-bulk-hint-row) td {
   padding-bottom: 0.2em;
 }
+
+.crm-vol-need-notes {
+  white-space: nowrap;
+  width: 1%;
+}
+.crm-vol-need-notes .crm-vol-notes-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  background: transparent;
+  vertical-align: middle;
+}
+.crm-vol-need-notes .crm-vol-has-notes .crm-vol-notes-indicator {
+  background: #2a67b0;
+}
+.crm-vol-define-notes-dialog textarea {
+  width: 100%;
+  box-sizing: border-box;
+}

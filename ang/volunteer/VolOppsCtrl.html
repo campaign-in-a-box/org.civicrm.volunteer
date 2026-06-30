@@ -162,7 +162,7 @@ Required vars: volOppData(), searchParams
               <i class="crm-i fa-comment crm-vol-detail-icon"
                  role="img"
                  title="{{:: ts('Role details') }}"
-                 ng-show="hasRoleDescription(need)"
+                 ng-show="hasRoleDescription(need) || hasNeedNotes(need)"
                  ng-click="showRoleDescription(need); $event.stopPropagation()"></i>
           </td>
           <td class="crm-vol-opp-time" data-label="{{:: ts('Time') }}">{{need.display_time}}</td>
@@ -194,7 +194,7 @@ Required vars: volOppData(), searchParams
   </div>
   <div class="crm-vol-opp-results" ng-show="_.size(volOppData()) > 0">
     <p class="description">
-      {{:: ts('For additional project or role detail, click the corresponding detail icon in the table below.') }}
+      {{:: ts('For additional project, role, or shift detail, click the corresponding detail icon in the table below.') }}
       <i class="crm-i fa-comment crm-vol-detail-icon" role="img" aria-hidden="true"></i>
     </p>
     <table class="display dataTable no-footer" role="grid">
@@ -215,8 +215,8 @@ Required vars: volOppData(), searchParams
             <i class="crm-i fa-comment crm-vol-detail-icon"
                role="img"
                title="{{:: ts('Project details') }}"
-               ng-show="hasProjectDescription(need.project)"
-               ng-click="showProjectDescription(need.project); $event.stopPropagation()"></i>
+               ng-show="hasProjectDescription(need.project) || hasNeedNotes(need)"
+               ng-click="showProjectDescription(need.project, need); $event.stopPropagation()"></i>
         </td>
         <td class="crm-vol-opp-beneficiary" data-label="{{:: ts('With') }}">
           <span class="beneficiary" ng-repeat="ben in need.project.beneficiaries">{{ben.display_name}}</span>
@@ -225,7 +225,7 @@ Required vars: volOppData(), searchParams
             <i class="crm-i fa-comment crm-vol-detail-icon"
                role="img"
                title="{{:: ts('Role details') }}"
-               ng-show="hasRoleDescription(need)"
+               ng-show="hasRoleDescription(need) || hasNeedNotes(need)"
                ng-click="showRoleDescription(need); $event.stopPropagation()"></i>
         </td>
         <td class="crm-vol-opp-time" data-label="{{:: ts('Time') }}">{{need.display_time}}</td>

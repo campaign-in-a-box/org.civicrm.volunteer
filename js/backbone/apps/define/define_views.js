@@ -29,6 +29,7 @@
         'change :input:not(.timeplugin, [name=schedule_type])': 'updateNeed',
         'change select[name=schedule_type]': 'changeScheduleType',
         'blur :input.timeplugin': 'updateNeed',
+        'click .crm-vol-edit-notes': 'editNotes',
         'click .crm-vol-del': 'deleteNeed'
       },
 
@@ -57,7 +58,56 @@
           this.$("[name='is_active']").prop("checked", true);
         }
 
+        this.listenTo(this.model, 'change:notes', this.updateNotesButton);
+        this.updateNotesButton();
         this.initializeTimeComponents();
+      },
+
+      updateNotesButton: function() {
+        var notes = $.trim(this.model.get('notes') || '');
+        this.$('.crm-vol-edit-notes').toggleClass('crm-vol-has-notes', notes !== '');
+      },
+
+      saveNeedField: function(field_name, value) {
+        var thisNeed = this;
+        if (thisNeed.model.get(field_name) == value) {
+          return $.Deferred().resolve().promise();
+        }
+        thisNeed.model.set(field_name, value);
+        var params = {'id': thisNeed.model.get('id')};
+        params[field_name] = value;
+        return CRM.api3('VolunteerNeed', 'create', params, true).done(function() {
+          Define.registerNeedChange('updated', params.id);
+        });
+      },
+
+      editNotes: function(e) {
+        e.preventDefault();
+        var view = this;
+        var current = view.model.get('notes') || '';
+        var $form = $('<div class="crm-vol-define-notes-dialog"></div>');
+        var $textarea = $('<textarea class="crm-form-textarea" rows="6" cols="50"></textarea>').val(current);
+        $form.append($('<p class="description">').text(ts('Notes for volunteers signing up to this shift.')));
+        $form.append($textarea);
+
+        var dialog = CRM.confirm({
+          title: ts('Opportunity notes'),
+          message: $form,
+          options: {
+            no: ts('Cancel'),
+            yes: ts('Save')
+          },
+          width: '480px'
+        });
+
+        dialog.on('crmConfirm:yes', function() {
+          var value = $.trim($textarea.val());
+          view.saveNeedField('notes', value);
+        });
+
+        setTimeout(function() {
+          $textarea.trigger('focus');
+        }, 0);
       },
 
       initializeTimeComponents: function () {
@@ -207,20 +257,7 @@
             break;
         }
 
-        // update only if a change occurred
-        if (thisNeed.model.get(field_name) != value) {
-          thisNeed.model.set(field_name, value);
-
-          var params = {'id': thisNeed.model.get('id')};
-          params[field_name] = value;
-          CRM.api3('VolunteerNeed', 'create', params, true).done(function() {
-            // As needs are updated, their IDs are added to an array
-            // This is intended to be an extension point; external code
-            // can listen for the 'volunteer:close:define' event then access the list of
-            // needs.
-            Define.registerNeedChange("updated", params.id);
-          });
-        }
+        thisNeed.saveNeedField(field_name, value);
       },
 
       deleteNeed: function() {

@@ -5,7 +5,7 @@
       {{:: ts('Below are the volunteer shifts you have signed up for. You can cancel a shift you no longer plan to work.') }}
     </p>
     <p ng-show="hasShifts()">
-      {{:: ts('For additional project or role detail, click the corresponding detail icon in the table below.') }}
+      {{:: ts('For additional project, role, or shift detail, click the corresponding detail icon in the table below.') }}
       <i class="crm-i fa-comment crm-vol-detail-icon" role="img" aria-hidden="true"></i>
     </p>
   </div>
@@ -57,7 +57,7 @@
           <i class="crm-i fa-comment crm-vol-detail-icon"
              role="img"
              title="{{:: ts('Role details') }}"
-             ng-show="hasRoleDescription(shift)"
+             ng-show="hasRoleDescription(shift) || hasNeedNotes(shift)"
              ng-click="showRoleDescription(shift)"></i>
         </td>
         <td class="crm-vol-opp-time" data-label="{{:: ts('Time') }}">{{ shift.display_time || formatWhen(shift) }}</td>

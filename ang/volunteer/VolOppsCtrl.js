@@ -30,7 +30,7 @@
     });
   });
 
-  angular.module('volunteer').controller('VolOppsCtrl', function ($route, $scope, $location, $window, $timeout, crmStatus, crmUiHelp, volOppSearch, countries, settings, supporting_data) {
+  angular.module('volunteer').controller('VolOppsCtrl', function ($route, $scope, $location, $window, $timeout, crmStatus, crmUiHelp, volOppSearch, countries, settings, supporting_data, volDetailBubble) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
     var hs = $scope.hs = crmUiHelp({file: 'ang/VolOppsCtrl'}); // See: templates/ang/VolOppsCtrl.hlp
@@ -173,12 +173,8 @@
       $location.path('/volunteer/my-shifts');
     };
 
-    $scope.hasTextContent = function (html) {
-      if (!html) {
-        return false;
-      }
-      return String(html).replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim().length > 0;
-    };
+    $scope.hasTextContent = volDetailBubble.hasTextContent;
+    $scope.hasNeedNotes = volDetailBubble.hasNeedNotes;
 
     $scope.hasProjectDescription = function (project) {
       return project && $scope.hasTextContent(project.description);
@@ -186,47 +182,6 @@
 
     $scope.hasRoleDescription = function (need) {
       return need && $scope.hasTextContent(need.role_description);
-    };
-
-    $scope.slotsRemaining = function (need) {
-      return Math.max(0, (need.quantity || 0) - (need.quantity_assigned || 0));
-    };
-
-    $scope.showDetailAlert = function (title, html) {
-      var existing = document.querySelector('dialog.crm-vol-detail-alert');
-      if (existing) {
-        existing.remove();
-      }
-
-      var dialog = document.createElement('dialog');
-      dialog.className = 'crm-dialog crm-alert crm-vol-detail-alert';
-
-      if (title) {
-        var heading = document.createElement('h1');
-        heading.textContent = title;
-        dialog.appendChild(heading);
-      }
-
-      var content = document.createElement('div');
-      content.className = 'crm-vol-detail-alert-content';
-      content.innerHTML = html;
-      dialog.appendChild(content);
-
-      var buttons = document.createElement('div');
-      buttons.className = 'crm-buttons crm-flex-justify-end';
-      var ok = document.createElement('button');
-      ok.type = 'button';
-      ok.className = 'crm-button';
-      ok.textContent = ts('OK');
-      ok.addEventListener('click', function () {
-        dialog.close();
-        dialog.remove();
-      });
-      buttons.appendChild(ok);
-      dialog.appendChild(buttons);
-
-      document.body.appendChild(dialog);
-      dialog.showModal();
     };
 
     $scope.showProjectDescription = function (project) {
@@ -252,11 +207,15 @@
       if (!_.isEmpty(addressBlock)) {
         addressBlock = '<p><strong>Location:</strong><br />' + addressBlock + '</p>';
       }
-      $scope.showDetailAlert(project.title, description + campaignBlock + addressBlock);
+      volDetailBubble.show(project.title, description + campaignBlock + addressBlock);
     };
 
     $scope.showRoleDescription = function (need) {
-      $scope.showDetailAlert(need.role_label, need.role_description);
+      volDetailBubble.show(need.role_label, volDetailBubble.appendNeedNotes(need.role_description, need));
+    };
+
+    $scope.slotsRemaining = function (need) {
+      return Math.max(0, (need.quantity || 0) - (need.quantity_assigned || 0));
     };
 
     $scope.toggleSelection = function (need) {

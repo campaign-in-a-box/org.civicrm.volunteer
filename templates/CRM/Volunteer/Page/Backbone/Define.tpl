@@ -46,6 +46,7 @@
         <th id="role_id">{ts domain='org.civicrm.volunteer'}Role{/ts}</th>
         <th id="quantity">{ts domain='org.civicrm.volunteer'}Volunteers Needed{/ts}</th>
         <th id="time_components">{ts domain='org.civicrm.volunteer'}Time{/ts}</th>
+        <th id="notes">{ts domain='org.civicrm.volunteer'}Notes{/ts}</th>
         <th id="visibility">{ts domain='org.civicrm.volunteer'}Public?{/ts}</th>
         <th>Enabled?</th>
         <th></th>
@@ -115,13 +116,19 @@
       </tbody>
     </table>
   </td>
+  <td class="crm-vol-need-notes">
+    <a href="#" class="crm-vol-edit-notes crm-hover-button action-item" title="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}Notes for volunteers signing up to this shift{/ts}">
+      <span class="crm-vol-notes-indicator"></span>
+      <span class="crm-vol-notes-label">{ts domain='org.civicrm.volunteer'}Notes{/ts}</span>
+    </a>
+  </td>
   <td><input type="checkbox" name="visibility_id" value="<%= visibilityValue %>"></td>
   <td><input type="checkbox" name="is_active" value="1"></td>
   <td><a href="#" class="crm-vol-del action-item crm-hover-button small-popup" title="{ts escape='htmlattribute' domain='org.civicrm.volunteer'}Delete{/ts}">{ts}Delete{/ts}</a></td>
 </script>
 
 <script type="text/template" id="crm-vol-define-flexible-need-tpl">
-  <td colspan="8">
+  <td colspan="9">
     <input type="checkbox" name="visibility_id" id="crm-vol-visibility-id" value="<%= visibilityValue %>">
     <label for="crm-vol-visibility-id">Allow users to sign up without specifying a shift.</label>
   </td>
@@ -129,7 +136,7 @@
 
 <script type="text/template" id="crm-vol-define-add-row-tpl">
   <tr id="crm-vol-define-add-row">
-    <td colspan="8">
+    <td colspan="9">
       <select class="crm-form-select crm-action-menu action-icon-plus" id="crm-vol-define-add-need">
         <option value="">{ts domain='org.civicrm.volunteer'}New Opportunity{/ts}</option>
         {crmAPI var='result' entity='VolunteerNeed' action='getoptions' field='role_id' sequential=0}

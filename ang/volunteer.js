@@ -324,6 +324,104 @@
           return deferred.promise;
         }
       };
+    })
+
+
+    /**
+     * Shared detail popup helpers for volunteer opportunity / my-shifts UIs.
+     */
+    .factory('volDetailBubble', function() {
+      var ts = CRM.ts('org.civicrm.volunteer');
+
+      function hasTextContent(html) {
+        if (!html) {
+          return false;
+        }
+        return String(html).replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim().length > 0;
+      }
+
+      function hasNeedNotes(item) {
+        return item && String(item.notes || '').trim().length > 0;
+      }
+
+      function formatNeedNotesBlock(item) {
+        if (!hasNeedNotes(item)) {
+          return '';
+        }
+        var text = _.escape(String(item.notes).trim()).replace(/\n/g, '<br />');
+        return '<p><strong>' + _.escape(ts('Notes:')) + '</strong><br />' + text + '</p>';
+      }
+
+      function appendNeedNotes(html, item) {
+        return html + formatNeedNotesBlock(item);
+      }
+
+      function show(title, html) {
+        var existing = document.querySelector('dialog.crm-vol-detail-alert');
+        if (existing) {
+          if (existing.open) {
+            existing.close();
+          }
+          existing.remove();
+        }
+
+        var dialog = document.createElement('dialog');
+        dialog.className = 'crm-dialog crm-alert crm-vol-detail-alert';
+
+        var panel = document.createElement('div');
+        panel.className = 'crm-vol-detail-alert-panel';
+
+        if (title) {
+          var heading = document.createElement('h1');
+          heading.textContent = title;
+          panel.appendChild(heading);
+        }
+
+        var content = document.createElement('div');
+        content.className = 'crm-vol-detail-alert-content';
+        content.innerHTML = html;
+        panel.appendChild(content);
+
+        var buttons = document.createElement('div');
+        buttons.className = 'crm-buttons crm-flex-justify-end';
+        var ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'crm-button';
+        ok.textContent = ts('OK');
+        ok.addEventListener('click', function () {
+          dialog.close();
+        });
+        buttons.appendChild(ok);
+        panel.appendChild(buttons);
+        dialog.appendChild(panel);
+
+        var dismissIfOutside = function (event) {
+          if (!dialog.open || panel.contains(event.target)) {
+            return;
+          }
+          event.preventDefault();
+          event.stopPropagation();
+          dialog.close();
+        };
+
+        dialog.addEventListener('close', function () {
+          document.removeEventListener('mousedown', dismissIfOutside, true);
+          document.removeEventListener('click', dismissIfOutside, true);
+          dialog.remove();
+        });
+        document.addEventListener('mousedown', dismissIfOutside, true);
+        document.addEventListener('click', dismissIfOutside, true);
+
+        document.body.appendChild(dialog);
+        dialog.showModal();
+      }
+
+      return {
+        show: show,
+        hasTextContent: hasTextContent,
+        hasNeedNotes: hasNeedNotes,
+        appendNeedNotes: appendNeedNotes,
+      };
     });
 
 })(angular, CRM.$, CRM._);

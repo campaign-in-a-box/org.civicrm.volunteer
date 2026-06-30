@@ -8,7 +8,7 @@
   });
 
   angular.module('volunteer').controller('VolunteerMyShifts', function (
-    $scope, $location, crmApi, crmStatus
+    $scope, $location, crmApi, crmStatus, volDetailBubble
   ) {
     var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
 
@@ -43,12 +43,8 @@
       return d.toLocaleString();
     };
 
-    $scope.hasTextContent = function (html) {
-      if (!html) {
-        return false;
-      }
-      return String(html).replace(/<[^>]+>/g, '').replace(/&nbsp;/gi, ' ').trim().length > 0;
-    };
+    $scope.hasTextContent = volDetailBubble.hasTextContent;
+    $scope.hasNeedNotes = volDetailBubble.hasNeedNotes;
 
     $scope.hasProjectDescription = function (project) {
       return project && $scope.hasTextContent(project.description);
@@ -56,43 +52,6 @@
 
     $scope.hasRoleDescription = function (shift) {
       return shift && $scope.hasTextContent(shift.role_description);
-    };
-
-    $scope.showDetailAlert = function (title, html) {
-      var existing = document.querySelector('dialog.crm-vol-detail-alert');
-      if (existing) {
-        existing.remove();
-      }
-
-      var dialog = document.createElement('dialog');
-      dialog.className = 'crm-dialog crm-alert crm-vol-detail-alert';
-
-      if (title) {
-        var heading = document.createElement('h1');
-        heading.textContent = title;
-        dialog.appendChild(heading);
-      }
-
-      var content = document.createElement('div');
-      content.className = 'crm-vol-detail-alert-content';
-      content.innerHTML = html;
-      dialog.appendChild(content);
-
-      var buttons = document.createElement('div');
-      buttons.className = 'crm-buttons crm-flex-justify-end';
-      var ok = document.createElement('button');
-      ok.type = 'button';
-      ok.className = 'crm-button';
-      ok.textContent = ts('OK');
-      ok.addEventListener('click', function () {
-        dialog.close();
-        dialog.remove();
-      });
-      buttons.appendChild(ok);
-      dialog.appendChild(buttons);
-
-      document.body.appendChild(dialog);
-      dialog.showModal();
     };
 
     $scope.showProjectDescription = function (project) {
@@ -118,11 +77,11 @@
       if (!_.isEmpty(addressBlock)) {
         addressBlock = '<p><strong>Location:</strong><br />' + addressBlock + '</p>';
       }
-      $scope.showDetailAlert(project.title, description + campaignBlock + addressBlock);
+      volDetailBubble.show(project.title, description + campaignBlock + addressBlock);
     };
 
     $scope.showRoleDescription = function (shift) {
-      $scope.showDetailAlert(shift.role_label, shift.role_description);
+      volDetailBubble.show(shift.role_label, volDetailBubble.appendNeedNotes(shift.role_description, shift));
     };
 
     if ($scope.contactId) {

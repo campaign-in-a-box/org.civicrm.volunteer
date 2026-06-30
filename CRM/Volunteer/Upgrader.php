@@ -59,7 +59,8 @@ class CRM_Volunteer_Upgrader extends CRM_Extension_Upgrader_Base {
     $this->schemaUpgrade20();
     $this->addNeedEndDate();
     $this->installNeedMetaDateFields();
-    
+    $this->installNeedNotesField();
+
     // uncomment the next line to insert sample data
     // $this->executeSqlFile('sql/volunteer_sample.mysql');
 
@@ -461,6 +462,26 @@ class CRM_Volunteer_Upgrader extends CRM_Extension_Upgrader_Base {
   public function upgrade_2301() {
     $this->ctx->log->info('Applying update 2301 - Add default value to volunteer_need.created column');
     CRM_Core_DAO::executeQuery('ALTER TABLE `civicrm_volunteer_need` CHANGE COLUMN `created` `created` timestamp DEFAULT CURRENT_TIMESTAMP');
+    return TRUE;
+  }
+
+  /**
+   * Add notes column to volunteer opportunities.
+   */
+  public function upgrade_2401() {
+    $this->ctx->log->info('Applying update 2401 - Add notes field to volunteer opportunities');
+    return $this->installNeedNotesField();
+  }
+
+  private function installNeedNotesField() {
+    if (CRM_Core_BAO_SchemaHandler::checkIfFieldExists('civicrm_volunteer_need', 'notes', FALSE)) {
+      return TRUE;
+    }
+    CRM_Core_DAO::executeQuery('
+      ALTER TABLE `civicrm_volunteer_need`
+      ADD `notes` text NULL COMMENT \'Staff notes for this opportunity, shown to volunteers when signing up.\'
+      AFTER `is_active`
+    ');
     return TRUE;
   }
 
