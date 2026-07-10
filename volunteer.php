@@ -44,12 +44,15 @@ function volunteer_civicrm_config(&$config) {
  * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu/
  */
 function volunteer_civicrm_navigationMenu(&$menu) {
+  // Parent is visible when any child would be. Items previously used
+  // permission => NULL, which made the whole Volunteers menu (including
+  // admin config) visible to every user with "access CiviCRM".
   _volunteer_civix_insert_navigation_menu($menu, NULL, array(
     'label' => E::ts('Volunteers'),
     'name' => 'volunteer_volunteers',
     'url' => NULL,
-    'permission' => NULL,
-    'operator' => NULL,
+    'permission' => 'create volunteer projects,edit own volunteer projects,edit all volunteer projects,register to volunteer',
+    'operator' => 'OR',
     'separator' => 0,
     'icon' => 'crm-i fa-users',
   ));
@@ -58,7 +61,7 @@ function volunteer_civicrm_navigationMenu(&$menu) {
     'label' => E::ts('New Volunteer Project'),
     'name' => 'volunteer_new_project',
     'url' => 'civicrm/vol/#/volunteer/manage/0',
-    'permission' => NULL,
+    'permission' => 'create volunteer projects',
     'operator' => NULL,
     'separator' => 0,
   ));
@@ -67,8 +70,8 @@ function volunteer_civicrm_navigationMenu(&$menu) {
     'label' => E::ts('Manage Volunteer Projects'),
     'name' => 'volunteer_manage_projects',
     'url' => 'civicrm/vol/#/volunteer/manage',
-    'permission' => NULL,
-    'operator' => NULL,
+    'permission' => 'create volunteer projects,edit own volunteer projects,edit all volunteer projects',
+    'operator' => 'OR',
     'separator' => 1,
   ));
 
@@ -76,7 +79,7 @@ function volunteer_civicrm_navigationMenu(&$menu) {
     'label' => E::ts('Configure Roles'),
     'name' => 'volunteer_config_roles',
     'url' => 'civicrm/admin/options/volunteer_role?reset=1',
-    'permission' => NULL,
+    'permission' => 'administer CiviCRM',
     'operator' => NULL,
     'separator' => 0,
   ));
@@ -85,7 +88,7 @@ function volunteer_civicrm_navigationMenu(&$menu) {
     'label' => E::ts('Configure Project Relationships'),
     'name' => 'volunteer_config_projrel',
     'url' => 'civicrm/admin/options/volunteer_project_relationship?reset=1',
-    'permission' => NULL,
+    'permission' => 'administer CiviCRM',
     'operator' => NULL,
     'separator' => 0,
   ));
@@ -94,7 +97,7 @@ function volunteer_civicrm_navigationMenu(&$menu) {
     'label' => E::ts('Configure Volunteer Settings'),
     'name' => 'volunteer_config_settings',
     'url' => 'civicrm/admin/volunteer/settings',
-    'permission' => NULL,
+    'permission' => 'administer CiviCRM',
     'operator' => NULL,
     'separator' => 1,
   ));
@@ -103,7 +106,7 @@ function volunteer_civicrm_navigationMenu(&$menu) {
     'label' => E::ts('Volunteer Interest Form'),
     'name' => 'volunteer_join',
     'url' => 'civicrm/volunteer/join',
-    'permission' => NULL,
+    'permission' => 'register to volunteer',
     'operator' => NULL,
     'separator' => 0,
   ));
@@ -112,7 +115,7 @@ function volunteer_civicrm_navigationMenu(&$menu) {
     'label' => E::ts('Search for Volunteer Opportunities'),
     'name' => 'volunteer_opp_search',
     'url' => 'civicrm/vol/#/volunteer/opportunities',
-    'permission' => NULL,
+    'permission' => 'register to volunteer',
     'operator' => NULL,
     'separator' => 0,
   ));
